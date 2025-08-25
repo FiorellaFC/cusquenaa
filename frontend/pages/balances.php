@@ -175,47 +175,46 @@ verificarPermiso(['Administrador', 'Secretaria']);
         <div id="layoutSidenav_content">
             <main class="container-xl my-2 col-10 mx-auto">
                 <div class="container-fluid px-4">
-                    <h1 class="mb-4 text-center">Gestión Balance de Empresa</h1>
-                    <div class="row">
-                        <div class="col-12 d-flex justify-content-between align-items-center">
-                            <div class="d-flex">
-                                <input type="text" class="form-control me-2" id="buscarNombre" placeholder="Nombre">
-                                <select class="form-control me-2" id="buscarMes" style="width: 120px;">
-                                    <option value="">Mes</option>
-                                    <option value="01">Enero</option>
-                                    <option value="02">Febrero</option>
-                                    <option value="03">Marzo</option>
-                                    <option value="04">Abril</option>
-                                    <option value="05">Mayo</option>
-                                    <option value="06">Junio</option>
-                                    <option value="07">Julio</option>
-                                    <option value="08">Agosto</option>
-                                    <option value="09">Septiembre</option>
-                                    <option value="10">Octubre</option>
-                                    <option value="11">Noviembre</option>
-                                    <option value="12">Diciembre</option>
-                                </select>
-                                <input type="number" class="form-control me-2" id="buscarAnio" placeholder="Año" style="width: 100px;">
-                                <select class="form-select form-select-sm" id="filterTipoBalance">
-                                    <option value="">Tipo de Balance</option>
-                                    <option value="Cotizaciones">Cotizaciones</option>
-                                    <option value="Prestamos">Prestamos</option>
-                                    <option value="Alquileres">Alquileres</option>
-                                    <option value="Gastos">Gastos</option>
-                                    <option value="Dominical">Dominical</option>
-                                    <option value="Coordinadores">Coordinadores</option>
-                                    </select>
-                                <button class="btn btn-primary" id="btnBuscar">Buscar</button>
-                            </div>
-                            <div>
-                                <button class="btn btn-secondary me-2" id="btnImprimir">Imprimir</button>
-                                <button class="btn btn-info text-white me-2" id="btnExportarPDF">Exportar PDF</button>
-                                <?php if ($_SESSION['rol'] === 'Administrador'): ?>
-                                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAgregarBalance">Agregar Balance</a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
+                    <h1 class="mb-4 text-center">Gestión Balance</h1>
+                    <div id="balanceContainer" class="my-4 p-3 border rounded">
+
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <!-- Filtros -->
+        <input type="text" class="form-control w-auto" id="buscarNombre" placeholder="Nombre">
+
+        <select class="form-control w-auto" id="buscarMes">
+            <option value="">Mes</option>
+            <option value="01">Enero</option>
+            <option value="02">Febrero</option>
+            <option value="03">Marzo</option>
+            <option value="04">Abril</option>
+            <option value="05">Mayo</option>
+            <option value="06">Junio</option>
+            <option value="07">Julio</option>
+            <option value="08">Agosto</option>
+            <option value="09">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+        </select>
+
+        <input type="number" class="form-control w-auto" id="buscarAnio" placeholder="Año" style="width: 100px;">
+
+        <select class="form-select form-select-sm w-auto" id="filterTipoBalance">
+            <option value="">Tipo de Balance</option>
+        </select>
+
+        <button class="btn btn-primary" id="btnBuscar">Buscar</button>
+
+        <!-- Botones de acciones -->
+        <button class="btn btn-secondary" id="btnImprimir">Imprimir</button>
+        <button class="btn btn-info text-white" id="btnExportarPDF">Exportar PDF</button>
+        <?php if ($_SESSION['rol'] === 'Administrador'): ?>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAgregarBalance">Agregar Balance</a>
+        <?php endif; ?>
+    </div>
+
+</div>
 
                     <div class="modal fade" id="modalAgregarBalance" tabindex="-1" aria-labelledby="modalAgregarBalanceLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
