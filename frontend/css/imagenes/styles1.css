@@ -1,0 +1,126 @@
+/*RECUPERAR_CONTRASEÑA*/
+
+/* Reset de márgenes y paddings por defecto */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Fondo de la página */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Contenedor principal */
+.container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+/* Caja de formulario */
+.reset-box {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Estilos del título */
+.reset-box h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+/* Estilo de las etiquetas */
+.reset-box label {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+    text-align: left;
+    width: 100%;
+    display: inline-block;
+}
+
+/* Estilo para los campos de entrada de texto */
+input[type="email"] {
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e60909;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="email"]:focus {
+    border-color: #007BFF;
+}
+
+/* Estilo para el botón de actualización */
+button {
+    padding: 11px 20px;
+    background-color: #b90404;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+    margin-bottom: 15px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para las validaciones (errores, etc.) */
+input:invalid {
+    border-color: #e74c3c;
+}
+
+input:valid {
+    border-color: #2ecc71;
+}
+
+/* Estilo para un mensaje de error */
+.error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: -15px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Estilo para el enlace de volver */
+a.button {
+    display: inline-block;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    background-color: #b90404; 
+    color: white;
+    font-size: 16px;
+    border-radius: 15px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.button:hover {
+    background-color: #8f9447;
+}
+

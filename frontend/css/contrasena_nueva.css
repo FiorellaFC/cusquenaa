@@ -1,0 +1,236 @@
+/* contrasena_nueva.css - Versión fusionada y mejorada */
+
+/* Reset y estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('https://img.freepik.com/free-photo/photorealistic-view-off-road-car-with-nature-terrain-weather-conditions_23-2151430049.jpg?t=st=1743534312~exp=1743537912~hmac=a5858687689e9706ba08f71c31699380cc45c021c9bb79cb01a1016911a74c39&w=996');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* Contenedor principal */
+.container {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Caja de formulario - Combinación de ambos estilos */
+.reset-box {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.reset-box h2 {
+    font-size: 28px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Estilos para la información del usuario */
+.user-info {
+    background: rgba(245, 245, 245, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    text-align: center;
+    border-left: 4px solid #b90404;
+}
+
+.user-info h3 {
+    margin: 8px 0;
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
+
+.user-info p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin: 5px 0;
+}
+
+/* Estilos para los campos de formulario */
+.form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+input[type="password"] {
+    padding: 14px 15px 14px 45px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    width: 100%;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+input[type="password"]:focus {
+    border-color: #b90404;
+    box-shadow: 0 0 0 3px rgba(185, 4, 4, 0.2);
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+    font-size: 18px;
+}
+
+/* Placeholder mejorado */
+::placeholder {
+    font-size: 0.95em;
+    color: #616161;
+    opacity: 1;
+}
+
+/* Reglas para contraseña */
+.password-rules {
+    margin: 20px 0;
+    font-size: 0.9rem;
+    color: #555;
+    text-align: left;
+    background: rgba(248, 249, 250, 0.7);
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 3px solid #b90404;
+}
+
+.password-rules ul {
+    padding-left: 20px;
+    margin: 10px 0 0;
+    list-style-type: none;
+}
+
+.password-rules li {
+    margin-bottom: 6px;
+    position: relative;
+    padding-left: 20px;
+}
+
+.password-rules li:before {
+    content: "•";
+    color: #b90404;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+/* Botón - Mezcla de ambos estilos */
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    background-color: #b90404;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+    box-shadow: 0 4px 8px rgba(185, 4, 4, 0.3);
+}
+
+.btn-submit:hover {
+    background-color: #9e0303;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(185, 4, 4, 0.4);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+/* Mensajes de error/éxito */
+.error-message, .success-message {
+    padding: 14px;
+    border-radius: 6px;
+    margin: 20px 0 0;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-message {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #c0392b;
+    border-left: 4px solid #e74c3c;
+}
+
+.success-message {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+    border-left: 4px solid #2ecc71;
+}
+
+.error-message i, .success-message i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+/* Imagen del logo */
+.img {
+    max-width: 180px;
+    height: auto;
+    display: block;
+    margin: 0 auto 25px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Validación visual */
+input:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: #e74c3c;
+}
+
+input:valid:not(:focus):not(:placeholder-shown) {
+    border-color: #2ecc71;
+}
+
+/* Efecto de transición para suavizar cambios */
+.reset-box, .btn-submit, input[type="password"] {
+    transition: all 0.3s ease-out;
+}
+
+/* Media queries para responsividad */
+@media (max-width: 480px) {
+    .reset-box {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .reset-box h2 {
+        font-size: 24px;
+    }
+    
+    input[type="password"] {
+        padding: 12px 12px 12px 40px;
+    }
+}

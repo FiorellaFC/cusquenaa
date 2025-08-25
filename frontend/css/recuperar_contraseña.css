@@ -1,0 +1,154 @@
+/*RECUPERAR_CONTRASEÑA*/
+
+/* Reset de márgenes y paddings por defecto */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/*https://www.freepik.com/free-ai-image/photorealistic-view-off-road-car-with-nature-terrain-weather-conditions_186037351.htm*/
+/* Fondo de la página */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-image: url('https://img.freepik.com/free-photo/photorealistic-view-off-road-car-with-nature-terrain-weather-conditions_23-2151430049.jpg?t=st=1743534312~exp=1743537912~hmac=a5858687689e9706ba08f71c31699380cc45c021c9bb79cb01a1016911a74c39&w=996');
+}
+
+/* Contenedor principal */
+.container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+/* Caja de formulario */
+.reset-box {
+    background-color: rgba(235, 231, 231, 0.3);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    margin-top: 5%;
+}
+
+/* Estilos del título */
+.reset-box h2 {
+    font-size: 28px;
+    color: #030303;
+    margin-bottom: 10px;
+}
+
+/* Estilo de las etiquetas */
+.reset-box label {
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-align: left;
+    width: 100%;
+    display: inline-block;
+}
+
+/* Estilo para los campos de entrada de texto */
+input[type="email"] {
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e60909;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="email"]:focus {
+    border-color: #0407e7;
+}
+
+/* Estilo para el botón de actualización */
+button {
+    padding: 11px 20px;
+    background-color: #b90404;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+    margin-bottom: 15px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para las validaciones (errores, etc.) */
+input:invalid {
+    border-color: #000000;
+}
+
+input:valid {
+    border-color: #2ecc71;
+}
+
+
+
+/* Estilo para un mensaje de error */
+.error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: -15px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Estilo para el enlace de volver */
+a.button {
+    display: inline-block;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    background-color: #b90404; 
+    color: white;
+    font-size: 16px;
+    border-radius: 50px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.button:hover {
+    background-color: #0056b3;
+}
+
+.styled-paragraph:hover {
+    background-color: #e9f4fb;
+    border-left-color: #0056b3;
+    transform: translateX(5px);
+}
+.img{
+    max-width: 50%;
+    height: auto;
+    display: block;
+    margin: 20px auto;
+}
+::placeholder{
+    font-size: 1em; /* Tamaño de la letra */
+    color: #616161; /* Color de la letra */
+    text-shadow: 0 0 10px #d1cfcf, 0 0 20px
+}   
+p{
+    height: 0%;
+    padding: 10px 10px; 
+    font-size: 14px;
+    text-align: left;
+    top: -16px;
+    position: relative;
+}
+
