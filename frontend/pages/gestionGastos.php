@@ -16,57 +16,71 @@ if (isset($_SESSION['rol'])) {
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="Gestión de Gastos Lubricentro La Cusqueña" />
-    <meta name="author" content="La Cusqueña" />
-    <title>Lubricentro Cusqueña - Gestión de Gastos</title>
+    <title>Lubricentro Cusqueña - Gestión de Gastos de Empresa</title>
     <link href="../css/bootstrap.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <style>
-        /* Estilos generales de la página */
-        .container-fluid {
-            padding-top: 0rem;
-        }
-        
-        /* Estilos de la tabla de listado */
+        /* Estilos específicos para la tabla y modales */
         .table {
             width: 100%;
             table-layout: auto;
+            word-wrap: break-word;
         }
         .table th,
         .table td {
             text-align: center;
             vertical-align: middle;
-            overflow-wrap: break-word;
-            max-width: 200px;
             padding: 10px;
+        }
+        .table td button {
+            margin: 0 3px;
+            white-space: nowrap;
         }
         .table-responsive {
             overflow-x: auto;
         }
-        @media (max-width: 576px) {
+        /* Ajustes para pantallas pequeñas */
+        @media (max-width: 768px) {
             .table th,
             .table td {
-                font-size: 14px;
-                max-width: 150px;
+                font-size: 13px;
+                max-width: 140px; /* Limita el ancho de las celdas para evitar desbordamiento */
+            }
+            .form-control.me-2 {
+                margin-right: 0.5rem !important;
+                margin-bottom: 0.5rem; /* Espaciado adicional para mejor visualización en móvil */
+            }
+            .d-flex.align-items-center {
+                flex-direction: column; /* Apila elementos de filtro en pantallas pequeñas */
+                align-items: stretch !important;
+            }
+            .d-flex.align-items-center .form-control,
+            .d-flex.align-items-center .btn {
+                width: 100%;
+            }
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 1rem; /* Espacio entre los bloques de filtro y el botón agregar */
             }
         }
-        
-        /* Estilos para achicar los formularios en modales */
-        .modal-body .form-control-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-            border-radius: 0.2rem;
+        .form-label.fw-bold {
+            margin-bottom: 0.5rem;
         }
-        .modal-body .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-            border-radius: 0.2rem;
+        /* Style for the total general text */
+        #totalGeneral {
+            font-size: 1.25rem; /* Larger font size */
+            font-weight: bold;  /* Bold text */
+            color: #111312ff;    /* Green color for emphasis (Bootstrap's success green) */
+            margin-top: 1rem;   /* Space above */
+            text-align: right;  /* Align to the right */
+            display: block;     /* Ensure it takes full width to align right */
+            padding-right: 15px; /* Adjust padding if needed to align with table/container */
         }
-        .modal-header h5 {
-            font-size: 1.25rem;
+        #btnResetSearch {
+            display: none;
         }
+
     </style>
 </head>
 <body class="sb-nav-fixed">
@@ -86,6 +100,7 @@ if (isset($_SESSION['rol'])) {
         <div id="layoutSidenav_nav">
             <?php if (!empty($sidebar_path)): ?>
             <script>
+                // Carga dinámica del sidebar basada en el rol
                 fetch('<?php echo $sidebar_path; ?>')
                     .then(response => response.text())
                     .then(html => document.getElementById('layoutSidenav_nav').innerHTML = html)
@@ -94,177 +109,161 @@ if (isset($_SESSION['rol'])) {
             <?php endif; ?>
         </div>
         <div id="layoutSidenav_content">
-            <main class="container-xl col-10 mx-auto">
+            <main class="container-xl my-2 col-11 mx-auto">
                 <div class="container-fluid px-4">
-                    <h1 class="text-center mb-4">Gestión de Gastos</h1>
-                    
-                    <!-- Contenedor principal de filtros y botón, alineado horizontalmente -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <!-- Filtros de búsqueda a la izquierda, en línea -->
-                        <div class="d-flex flex-wrap align-items-center gap-3">
-                            
-                            <div class="d-flex align-items-center gap-2">
-                                <label for="from" class="form-label mb-0">Desde:</label>
-                                <input id="from" type="date" class="form-control form-control-sm">
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <label for="to" class="form-label mb-0">Hasta:</label>
-                                <input id="to" type="date" class="form-control form-control-sm">
-                            </div>
-                            <!-- Botón de listado sin funcionalidad JS -->
-                            <button id="btnLoad" class="btn btn-secondary btn-sm">Listar</button>
-                        </div>
+                    <h1 class="mt-4 text-center mb-4">Gestión de Gastos</h1>
 
-                        <!-- Botón de registro a la derecha -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#gastoModal">
+                    <div class="row">
+                        <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-center">
+                            <div class="d-flex flex-column flex-md-row align-items-center mb-3 mb-md-0">
+                                <label for="filterFechaInicio" class="me-2">Desde:</label>
+                                <input type="date" id="filterFechaInicio" class="form-control me-2">
+                                <label for="filterFechaFin" class="me-2">Hasta:</label>
+                                <input type="date" id="filterFechaFin" class="form-control me-2">
+                                <input type="text" class="form-control me-2" id="filterConcepto" placeholder="Buscar por concepto">
+                                <button class="btn btn-primary me-2" id="btnBuscarGastos">Listar</button>
+                                <button class="btn btn-secondary" id="btnResetSearch">Restablecer</button>
+                            </div>
+                           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAgregar">
                             <i class="fas fa-plus-circle me-2"></i>Registrar Nuevo Gasto
-                        </button>
+                           </button>
+                        </div>
                     </div>
-                    
-                    <!-- Tabla de Listado -->
-                    <div class="table-responsive">
-                        <table id="tbl" class="table table-striped table-bordered table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Concepto</th>
-                                    <th>Monto</th>
-                                    <th>Obs.</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Los datos se cargarán aquí con JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Paginación sin funcionalidad JS -->
-                    <nav aria-label="Page navigation example" class="d-flex justify-content-end">
-                        <ul class="pagination">
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#" aria-label="Previous">
-                                    <span aria-hidden="true">«</span>
-                                </a>
-                            </li>
-                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#" aria-label="Next">
-                                    <span aria-hidden="true">»</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
 
-                    <!-- Modal de Registro de Gasto con el nuevo diseño -->
-                    <div class="modal fade" id="gastoModal" tabindex="-1" aria-labelledby="gastoModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
+                    <div class="modal fade" id="modalAgregar" tabindex="-1" aria-labelledby="modalAgregarLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <div class="modal-header text-black">
-                                    <h4 class="modal-title" id="gastoModalLabel">Registrar Nuevo Gasto</h4>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <div class="modal-header">
+                                    <h3 class="modal-title w-100 text-center" id="modalAgregarLabel">Registro de Gasto</h3>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <!-- Formulario de registro con los campos actualizados -->
-                                    <form id="frmG" class="row g-3">
-                                        <div class="col-12">
-                                            <label for="concepto" class="form-label fw-bold">Concepto</label>
-                                            <input name="concepto" id="concepto" class="form-control form-control-sm" placeholder="Concepto" required/>
+                                    <form id="formAgregarGasto">
+                                        <div class="mb-3">
+                                            <label for="addConcepto" class="form-label fw-bold">Concepto:</label>
+                                            <input type="text" class="form-control" id="addConcepto" name="concepto" required>
                                         </div>
-                                        <div class="col-12">
-                                            <label for="monto" class="form-label fw-bold">Monto</label>
-                                            <input name="monto" id="monto" type="number" step="0.01" class="form-control form-control-sm" placeholder="Monto" required/>
+                                        <div class="mb-3">
+                                            <label for="monto" class="form-label fw-bold">Monto:</label>
+                                            <input type="number" step="0.01" class="form-control" id="addMonto" name="monto" required>
                                         </div>
-                                        <div class="col-12">
-                                            <label for="fecha" class="form-label fw-bold">Fecha</label>
-                                            <input name="fecha" id="fecha" type="date" class="form-control form-control-sm" required/>
+                                        <div class="mb-3">
+                                            <label for="fecha" class="form-label fw-bold">Fecha:</label>
+                                            <input type="date" class="form-control" id="addFecha" name="fecha" required>
                                         </div>
-                                        <div class="col-12">
-                                            <label for="observacion" class="form-label fw-bold">Observación</label>
-                                            <textarea name="observacion" id="observacion" class="form-control form-control-sm" placeholder="Observación" rows="4"></textarea>
+                                        <div class="mb-3">
+                                            <label for="addObservaciones" class="form-label fw-bold">Observaciones:</label>
+                                            <textarea class="form-control" id="addObservaciones" name="observaciones" rows="3" required></textarea>
                                         </div>
-                                        <div class="col-12 text-center mt-4">
-                                            <button type="submit" class="btn btn-primary btn-sm">Registrar</button>
+                                        <div class="modal-footer d-flex justify-content-center">
+                                            <button type="submit" class="btn btn-primary">Agregar</button>
                                         </div>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h3 class="modal-title w-100 text-center" id="modalEditarLabel">Actualización de Gasto</h3>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="formEditarGasto">
+                                        <input type="hidden" id="editGastoId" name="id">
+                                        <div class="mb-3">
+                                            <label for="editConcepto" class="form-label fw-bold">Concepto:</label>
+                                            <input type="text" class="form-control" id="editConcepto" name="concepto" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editMonto" class="form-label fw-bold">Monto:</label>
+                                            <input type="number" step="0.01" class="form-control" id="editMonto" name="monto" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editFecha" class="form-label fw-bold">Fecha:</label>
+                                            <input type="date" class="form-control" id="editFecha" name="fecha" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editObservaciones" class="form-label fw-bold">Observaciones:</label>
+                                            <textarea class="form-control" id="editObservaciones" name="observaciones" rows="3" required></textarea>
+                                        </div>
+                                        <div class="modal-footer d-flex justify-content-center">
+                                            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive my-4">
+                        <table class="table table-striped table-bordered table-hover text-center">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Concepto</th>
+                                    <th>Monto</th>
+                                    <th>Fecha</th>
+                                    <th>Observaciones</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaGastos" class="align-middle">
+                                </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-end mb-3">
+                        <span id="totalGeneral"></span>
+                    </div>
+                    
+                    <nav aria-label="Page navigation example" class="d-flex justify-content-end">
+                        <ul class="pagination" id="pagination">
+                            </ul>
+                    </nav>
                 </div>
             </main>
         </div>
     </div>
-    
-    <!-- Contenedor de Toasts (Notificaciones) -->
+
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="toastSuccess" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body text-white bg-success" id="toastSuccessBody">
-                </div>
+                    </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
+
         <div id="toastError" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body text-white bg-danger" id="toastErrorBody">
-                </div>
+                    </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     </div>
 
+    <div class="modal fade" id="modalEliminarConfirmacion" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalEliminarLabel">¿Confirmar Eliminación?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar este gasto? Esta acción no se puede deshacer.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        
     <script src="../js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Función de utilidad para las llamadas a la API
-        async function api(url, options) {
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.error("Error en la llamada a la API:", error);
-                showToast("Error en la llamada a la API", "error");
-                return null;
-            }
-        }
-        
-        // Función para mostrar notificaciones tipo Toast
-        function showToast(message, type) {
-            const toastElement = document.getElementById(type === 'success' ? 'toastSuccess' : 'toastError');
-            const toastBody = document.getElementById(type === 'success' ? 'toastSuccessBody' : 'toastErrorBody');
-            toastBody.textContent = message;
-            const toast = new bootstrap.Toast(toastElement);
-            toast.show();
-        }
-
-        // Manejador del formulario de registro del modal
-        document.getElementById('frmG').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const data = Object.fromEntries(fd.entries());
-            data.monto = parseFloat(data.monto);
-            
-            // Llama a la API para registrar el nuevo gasto
-            const res = await api('/api/gastos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            
-            // Si el registro fue exitoso (el backend devuelve un 'id'), cierra el modal y muestra un toast
-            if (res && res.id) {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('gastoModal'));
-                if (modal) modal.hide();
-                e.target.reset();
-                showToast("Gasto registrado correctamente.", "success");
-            } else {
-                showToast("No se pudo registrar el gasto.", "error");
-            }
-        });
-        
-    </script>
+    <script src="../js/scripts.js"></script> <script src="../js/functions/gestionGastosEmpresa.js"></script>
 </body>
 </html>

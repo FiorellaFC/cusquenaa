@@ -12,7 +12,7 @@ header('Content-Type: application/json');
 
 verificarPermiso(['Administrador', 'Secretaria']);
 
-$descripcion = $_GET['descripcion'] ?? '';
+$concepto = $_GET['concepto'] ?? '';
 $fecha_inicio = $_GET['fecha_inicio'] ?? '';
 $fecha_fin = $_GET['fecha_fin'] ?? '';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -23,9 +23,9 @@ try {
     $conditions = [];
     $params = [];
 
-    if (!empty($descripcion)) {
-        $conditions[] = "descripcion LIKE ?";
-        $params[] = "%" . $descripcion . "%";
+    if (!empty($concepto)) {
+        $conditions[] = "concepto LIKE ?";
+        $params[] = "%" . $concepto . "%";
     }
     if (!empty($fecha_inicio)) {
         $conditions[] = "fecha >= ?";
@@ -41,7 +41,6 @@ try {
         $whereClause .= " AND " . implode(" AND ", $conditions);
     }
 
-    // --- Obtener el total de registros para paginación ---
     $sqlTotal = "SELECT COUNT(*) FROM gastos_empresa " . $whereClause;
     $stmtTotal = $conn->prepare($sqlTotal);
     if ($stmtTotal === false) {
@@ -51,7 +50,6 @@ try {
     $totalRecords = $stmtTotal->fetchColumn();
     $stmtTotal = null;
 
-    // --- Obtener el total general del monto de gastos filtrados ---
     $sqlTotalMonto = "SELECT SUM(monto) FROM gastos_empresa " . $whereClause;
     $stmtTotalMonto = $conn->prepare($sqlTotalMonto);
     if ($stmtTotalMonto === false) {
@@ -62,8 +60,8 @@ try {
     $totalGeneralMonto = $totalGeneralMonto !== null ? (float)$totalGeneralMonto : 0.00;
     $stmtTotalMonto = null;
 
-    // --- Obtener los gastos con paginación y filtros ---
-    $sqlGastos = "SELECT id, descripcion, tipo_gasto, monto, fecha, detalle FROM gastos_empresa " . $whereClause . " ORDER BY fecha ASC LIMIT ? OFFSET ?";
+    // ⭐ CORRECCIÓN: Eliminado 'tipo_gasto' de la selección
+    $sqlGastos = "SELECT id, concepto, monto, fecha, observaciones FROM gastos_empresa " . $whereClause . " ORDER BY fecha ASC LIMIT ? OFFSET ?";
     $stmtGastos = $conn->prepare($sqlGastos);
     if ($stmtGastos === false) {
         throw new Exception("Error al preparar la consulta de gastos: " . implode(" ", $conn->errorInfo()));
