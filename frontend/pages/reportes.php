@@ -85,7 +85,9 @@ if (isset($_SESSION['rol'])) {
                                 <option value="general">General</option>
                                 <option value="lubricentro">Lubricentro</option>
                             </select>
+                            <span class="fw-bold">Desde:</span>
                             <input type="date" id="fechaInicio" name="desde" class="form-control w-auto" />
+                            <span class="fw-bold">Hasta:</span>
                             <input type="date" id="fechaFin" name="hasta" class="form-control w-auto" />
                             <button type="submit" class="btn btn-primary">Descargar PDF</button>
                         </form>
@@ -96,18 +98,6 @@ if (isset($_SESSION['rol'])) {
     </div>
 
     <script src="../js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Envío del formulario para generar PDF
-        document.getElementById('balanceForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const tipo = document.getElementById('tipoBalance').value;
-            const desde = document.getElementById('fechaInicio').value;
-            const hasta = document.getElementById('fechaFin').value;
-
-            // Redirige a un PHP que genere el PDF
-            window.location.href = `../../backend/reportes/balance_pdf.php?tipo=${tipo}&desde=${desde}&hasta=${hasta}`;
-        });
-    </script>
+    <script src="../js/functions/reportes.js"></script>
 </body>
 </html>
