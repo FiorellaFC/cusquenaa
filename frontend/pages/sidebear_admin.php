@@ -6,7 +6,7 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                 Usuarios
             </a>
-            <a class="nav-link" href="reservas.php">
+            <a class="nav-link" href="gestioncitas.php">
                 <div class="sb-nav-link-icon"><i class="fas fa-balance-scale"></i></div>
                 Reservas
             </a>
