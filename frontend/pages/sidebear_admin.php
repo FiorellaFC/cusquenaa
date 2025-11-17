@@ -10,9 +10,9 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-balance-scale"></i></div>
                 Balances
             </a>
-            <a class="nav-link" href="gestionGastos.php">
+            <a class="nav-link" href="gestionCitas.php">
                 <div class="sb-nav-link-icon"><i class="fas fa-coins"></i></div>
-                Gastos
+                citas
             </a>
             <a class="nav-link" href="gestionLubricentro.php">
                 <div class="sb-nav-link-icon"><i class="fas fa-oil-can"></i></div>
@@ -30,18 +30,18 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
                 Reportes
             </a>
-            <a class="nav-link" href="gestionTrabajadores.php">
+            <a class="nav-link" href="Inicio - LA ROSA NÁUTICA.html">
                 <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                Trabajadores
+                Inicio - LA ROSA NÁUTICA
             </a>
-        </div>
+        </div>frontend/pages/Inicio - LA ROSA NÁUTICA.html
     </div>
     <div class="sb-sidenav-footer">
         <div class="small">Sesion Inciada como:</div>
         Administrador
     </div>
 </nav>
-
+index.html
 <script>
     // Control del toggle
     document.getElementById('sidebarToggle')?.addEventListener('click', function(e) {
