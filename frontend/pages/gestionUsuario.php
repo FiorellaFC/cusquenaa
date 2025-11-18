@@ -43,7 +43,7 @@ verificarPermiso(['Administrador']);
       </script>
     </div>
 
-
+    <!-- contenido principal -->
     <div id="layoutSidenav_content">
       <main class="container-xl my-2 col-12 mx-auto">
         <div class="container-fluid px-4 ">

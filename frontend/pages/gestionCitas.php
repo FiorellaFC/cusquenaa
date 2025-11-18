@@ -1,6 +1,5 @@
 <?php
 // Generamos un ID de sesión único para cada visita.
-// En una aplicación real, usarías la sesión de PHP (session_start() y $_SESSION).
 $session_id = uniqid('reserva_', true);
 ?>
 <!DOCTYPE html>
@@ -10,26 +9,20 @@ $session_id = uniqid('reserva_', true);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Reservar Cita - Lubricentro La Cusqueña</title>
     
-    <link href="../css/bootstrap.css" rel="stylesheet" />
+    <link href="../css/bootstrap.css" rel="stylesheet" /> <!-- Ajusta tu ruta de CSS -->
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <style>
         body { background-color: #e9ecef; }
         .container { max-width: 960px; }
         .card-header { background-color: #0d6efd; color: white; }
-        
-        /* Estilos del Acordeón */
         .accordion-button { font-weight: 600; font-size: 1.1rem; }
         .accordion-button:not(.collapsed) { color: #0c63e4; background-color: #e7f1ff; }
-        
-        /* Grid de Horarios */
         .horarios-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
             gap: 1rem; 
             padding: 1rem;
         }
-        
-        /* Estilos de los Botones de Horario */
         .horario-btn {
             border: 2px solid;
             font-weight: 500;
@@ -38,7 +31,6 @@ $session_id = uniqid('reserva_', true);
         }
         .horario-btn.disponible { border-color: #198754; color: #198754; }
         .horario-btn.disponible:hover { background-color: #198754; color: white; transform: translateY(-2px); }
-        
         .horario-btn.seleccionado { 
             background-color: #0d6efd; 
             color: white; 
@@ -46,7 +38,6 @@ $session_id = uniqid('reserva_', true);
             box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
             transform: scale(1.05);
         }
-        
         .horario-btn.ocupado, .horario-btn.bloqueado { 
             background-color: #6c757d;
             border-color: #6c757d;
@@ -54,7 +45,6 @@ $session_id = uniqid('reserva_', true);
             cursor: not-allowed; 
             opacity: 0.6; 
         }
-
         #cronometro-container {
             background-color: #fff3cd;
             border: 1px solid #ffe69c;
@@ -76,7 +66,6 @@ $session_id = uniqid('reserva_', true);
                     <h4 class="border-bottom pb-2 mb-3"><i class="fas fa-calendar-alt me-2"></i>Paso 1: Selecciona un día y un horario</h4>
                     
                     <div class="accordion" id="acordeonSemana">
-                        <!-- El JavaScript generará los días de la semana aquí -->
                         <div class="text-center p-5">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Cargando horarios de la semana...</span>
@@ -99,18 +88,25 @@ $session_id = uniqid('reserva_', true);
                         <input type="hidden" name="fecha">
                         <input type="hidden" name="hora">
                         
-                        <div class="mb-3">
-                            <label for="nombre_cliente" class="form-label">Nombre Completo</label>
-                            <input type="text" class="form-control" id="nombre_cliente" name="nombre_cliente" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="dni_cliente" class="form-label">DNI / RUC</label>
+                                <input type="text" class="form-control" id="dni_cliente" name="dni_cliente" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre_cliente" class="form-label">Nombre Completo</label>
+                                <input type="text" class="form-control" id="nombre_cliente" name="nombre_cliente" required>
+                            </div>
                         </div>
+                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="telefono_cliente" class="form-label">Teléfono</label>
-                                <input type="tel" class="form-control" id="telefono_cliente" name="telefono_cliente">
+                                <input type="tel" class="form-control" id="telefono_cliente" name="telefono_cliente" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="email_cliente" class="form-label">Correo Electrónico</label>
-                                <input type="email" class="form-control" id="email_cliente" name="email_cliente">
+                                <input type="email" class="form-control" id="email_cliente" name="email_cliente" required>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -126,7 +122,7 @@ $session_id = uniqid('reserva_', true);
         </div>
     </div>
 
-    <script src="../js/bootstrap.bundle.min.js"></script>
+    <script src="../js/bootstrap.bundle.min.js"></script> <!-- Ajusta tu ruta de JS -->
     <!-- ASEGÚRATE DE QUE ESTA RUTA ES CORRECTA -->
     <script src="../js/functions/reservar_cita.js"></script>
 </body>

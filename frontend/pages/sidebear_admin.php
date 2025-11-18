@@ -11,15 +11,19 @@
                 Reservas
             </a>
            
-            <a class="nav-link" href="reportes.php">
+            <a class="nav-link" href="gestion_citas.php   ">
                 <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
-                Reportes
+                citas
+            </a>
+             <a class="nav-link" href="gestion_clientes.php   ">
+                <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
+                clientes
             </a>
         </div>
     </div>
     <div class="sb-sidenav-footer">
         <div class="small">Sesion Inciada como:</div>
-        Administrador
+        administrador
     </div>
 </nav>
 
