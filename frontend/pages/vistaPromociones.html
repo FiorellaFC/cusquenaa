@@ -4,79 +4,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lubricentro La Cusqueña</title>
+    <title>Promociones - Lubricentro La Cusqueña</title>
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+
+    <!-- AOS Animaciones -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
-        /* Hero Section con Parallax */
-        #hero {
-            background: url('../css/imagenes/lubricentro.jpg') center center/cover no-repeat fixed;
-            height: 100vh;
-            color: white;
+        /* Hero Promociones */
+        #hero-promos {
+            background: url('../css/imagenes/img2.jpg') center center/cover no-repeat fixed;
+            height: 70vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
+            color: white;
             text-align: center;
             position: relative;
         }
 
-        #hero::before {
+        #hero-promos::before {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
         }
 
-        #hero .content {
+        #hero-promos .content {
             position: relative;
             z-index: 1;
         }
 
-        #hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        #hero-promos h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.7);
         }
 
-        #hero p {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+        #hero-promos p {
+            font-size: 1.4rem;
         }
 
-        /* Servicios / Promociones */
-        .card {
+        /* Cards Promos */
+        .promo-card {
             border: none;
             border-radius: 15px;
-            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+            transition: all 0.4s ease-in-out;
+            background: white;
         }
 
-        .card:hover {
+        .promo-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.25);
         }
 
-        .btn-primary {
-            transition: all 0.3s;
-        }
-
-        .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        .promo-badge {
+            background: #dc3545;
+            color: white;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
         }
 
         /* Footer */
         footer {
-            background-color: #343a40;
+            background-color: #212529;
+            padding: 40px 0;
+            text-align: center;
             color: white;
-            padding: 50px 0;
         }
 
         footer a {
@@ -92,84 +94,96 @@
 </head>
 
 <body>
+
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">Lubricentro La Cusqueña</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand" href="vistaCusquena.html">Lubricentro La Cusqueña</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="vistaCusquena.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="vistaCusquena.html">Inicio</a></li>
                     <li class="nav-item"><a class="nav-link" href="vistaServicios.html">Servicios</a></li>
-                    <li class="nav-item"><a class="nav-link" href="vistaPromociones.html">Promociones</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="vistaPromociones.html">Promociones</a></li>
                     <li class="nav-item"><a class="nav-link" href="vistaContacto.html">Contacto</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="hero">
-        <div class="content" data-aos="fade-up">
-            <h1>Lubricentro La Cusqueña</h1>
-            <p>Calidad, confianza y rapidez para el cuidado de tu vehículo</p>
-            <a href="vistaServicios.html" class="btn btn-primary btn-lg">Nuestros Servicios</a>
+    <!-- Hero Promociones -->
+    <section id="hero-promos">
+        <div class="content" data-aos="zoom-in">
+            <h1>Promociones Especiales</h1>
+            <p>Aprovecha nuestros descuentos exclusivos por tiempo limitado</p>
         </div>
     </section>
 
-    <!-- Servicios -->
-    <section id="servicios" class="py-5">
+    <!-- Promociones -->
+    <section class="py-5">
         <div class="container">
-            <h2 class="text-center mb-5" data-aos="fade-up">Nuestros Servicios</h2>
+            <h2 class="text-center mb-5" data-aos="fade-up">Ofertas del Mes</h2>
+
             <div class="row g-4">
+
+                <!-- Promo 1 -->
                 <div class="col-md-4" data-aos="fade-right">
-                    <div class="card text-center p-4 h-100">
-                        <i class="fas fa-oil-can fa-3x mb-3 text-primary"></i>
-                        <h5 class="card-title">Cambio de Aceite</h5>
-                        <p class="card-text">Aceites premium y servicio rápido para mantener tu motor saludable.</p>
+                    <div class="promo-card p-4 text-center shadow">
+                        <span class="promo-badge">-20%</span>
+                        <i class="fas fa-oil-can fa-3x my-3 text-primary"></i>
+                        <h5 class="fw-bold">Cambio de Aceite Premium</h5>
+                        <p>Incluye filtro y revisión rápida del motor.</p>
+                        <p class="fw-bold text-success fs-4">S/ 80</p>
+                       
                     </div>
                 </div>
+
+                <!-- Promo 2 -->
                 <div class="col-md-4" data-aos="fade-up">
-                    <div class="card text-center p-4 h-100">
-                        <i class="fas fa-car fa-3x mb-3 text-primary"></i>
-                        <h5 class="card-title">Revisión General</h5>
-                        <p class="card-text">Chequeo completo para que tu vehículo siempre esté en óptimas condiciones.</p>
+                    <div class="promo-card p-4 text-center shadow">
+                        <span class="promo-badge">Combo Especial</span>
+                        <i class="fas fa-car-side fa-3x my-3 text-primary"></i>
+                        <h5 class="fw-bold">Lavado + Aspirado + Brillo</h5>
+                        <p>Deja tu auto impecable por dentro y por fuera.</p>
+                        <p class="fw-bold text-success fs-4">S/ 35</p>
+                      
                     </div>
                 </div>
+
+                <!-- Promo 3 -->
                 <div class="col-md-4" data-aos="fade-left">
-                    <div class="card text-center p-4 h-100">
-                        <i class="fas fa-tools fa-3x mb-3 text-primary"></i>
-                        <h5 class="card-title">Mantenimiento Mecánico</h5>
-                        <p class="card-text">Reparaciones y ajustes realizados por técnicos especializados.</p>
+                    <div class="promo-card p-4 text-center shadow">
+                        <span class="promo-badge">-15%</span>
+                        <i class="fas fa-tools fa-3x my-3 text-primary"></i>
+                        <h5 class="fw-bold">Mantenimiento Preventivo</h5>
+                        <p>Cambia filtros + revisión de frenos y suspensión.</p>
+                        <p class="fw-bold text-success fs-4">S/ 110</p>
+                        
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="text-center">
-        <div class="container">
-            <p>© 2025 Lubricentro La Cusqueña. Todos los derechos reservados.</p>
-            <p>
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-whatsapp"></i></a>
-            </p>
-        </div>
+    <footer>
+        <p>© 2025 Lubricentro La Cusqueña — Todos los derechos reservados.</p>
     </footer>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         AOS.init({
-            duration: 1000,
+            duration: 1100,
             once: true
         });
     </script>
-</body>
 
+</body>
 </html>

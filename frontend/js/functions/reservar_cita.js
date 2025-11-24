@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURACIÓN Y REFERENCIAS AL DOM ---
-    const API_URL = "http://localhost/cusquena/backend/api/controllers/gestionCitas.php"; // ¡Verifica que esta ruta sea correcta!
+    const API_URL = "http://localhost/cusquena/backend/api/controllers/vista_citas/gestionCitas.php"; // ¡Verifica que esta ruta sea correcta!
     let SESSION_ID; // Se obtendrá después de cargar los horarios iniciales
     const TIEMPO_BLOQUEO = 300; // 300 segundos = 5 minutos
 

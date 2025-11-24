@@ -1,5 +1,5 @@
 const API_URL =
-  "http://localhost/cusquena/backend/api/controllers/gestionUsuario.php";
+  "http://localhost/cusquena/backend/api/controllers/vista_usuarios/gestionUsuario.php";
 
 document.addEventListener("DOMContentLoaded", function () {
   listarUsuarios();

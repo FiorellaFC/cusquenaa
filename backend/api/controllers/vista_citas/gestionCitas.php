@@ -3,7 +3,7 @@
 header('Content-Type: application/json');
 
 // Usamos tu archivo de conexión original
-require_once "../../includes/db.php"; 
+require_once "../../../includes/db.php"; 
 
 // --- CONFIGURACIÓN ---
 $HORA_INICIO = '08:00';

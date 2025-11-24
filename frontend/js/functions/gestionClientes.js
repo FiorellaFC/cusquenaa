@@ -1,8 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Script de gestión de clientes cargado.");
 
-    // URL de la API (usando la ruta que me confirmaste)
-    const API_URL = 'http://localhost/cusquena/backend/api/controllers/gestionClientes.php';
+    // --- RUTAS ACTUALIZADAS A SUBCARPETAS ---
+    // API para clientes en: backend/api/controllers/vista_clientes/gestionClientes.php
+    const API_CLIENTES_URL = 'http://localhost/cusquena/backend/api/controllers/vista_clientes/gestionClientes.php';
+    
+    // API para citas (historial) en: backend/api/controllers/vista_citas/gestionCitasAdmin.php
+    const API_CITAS_URL = 'http://localhost/cusquena/backend/api/controllers/vista_citas/gestionCitasAdmin.php';
 
     // --- REFERENCIAS AL DOM ---
     const tbodyClientes = document.querySelector('#tblClientes tbody');
@@ -11,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnBuscar = document.getElementById('btnBuscar');
     const btnLimpiar = document.getElementById('btnLimpiar');
 
-    // Modales
+    // Modales principales
     const modalAgregar = new bootstrap.Modal(document.getElementById('modalAgregarCliente'));
     const formAgregar = document.getElementById('formAgregarCliente');
     const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCliente'));
@@ -19,15 +23,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCliente'));
     const btnConfirmarEliminar = document.getElementById('btnConfirmarEliminar');
 
+    // Elementos del Modal de Historial
+    const modalHistorial = new bootstrap.Modal(document.getElementById('modalHistorialCliente'));
+    const tbodyHistorial = document.getElementById('tbodyHistorial');
+    const historialNombreCliente = document.getElementById('historialNombreCliente');
+    const filtroHistorial = document.getElementById('filtroHistorial');
+
     let clientesData = []; 
     let clienteIdParaEliminar = null; 
+    let historialActual = []; 
 
-    // --- FUNCIÓN GENÉRICA DE API ---
+    // --- API GENÉRICA ---
     async function api(url, options = {}) {
         try {
             const response = await fetch(url, options);
             if (!response.ok) {
-                const errorData = await response.json();
+                const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `Error: ${response.statusText}`);
             }
             return response.status === 204 ? { success: true } : await response.json();
@@ -38,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- LÓGICA DE RENDERIZADO Y CARGA ---
+    // --- RENDERIZADO PRINCIPAL ---
     function renderizarTabla() {
         if (!tbodyClientes) return;
         tbodyClientes.innerHTML = '';
@@ -53,10 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${cliente.telefono || 'N/A'}</td>
                     <td>${cliente.email || 'N/A'}</td>
                     <td>
-                        <button class="btn btn-sm btn-warning text-white btn-edit" title="Editar Cliente">
+                        <button class="btn btn-sm btn-info text-white btn-historial me-1" data-id="${cliente.id}" title="Ver Historial">
+                            <i class="fas fa-history"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning text-white btn-edit me-1" title="Editar">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger btn-eliminar" data-id="${cliente.id}" title="Eliminar Cliente">
+                        <button class="btn btn-sm btn-danger btn-eliminar" data-id="${cliente.id}" title="Eliminar">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -68,19 +82,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- LOGICA DE HISTORIAL ---
+    async function cargarHistorial(clienteId, nombreCliente) {
+        historialNombreCliente.textContent = nombreCliente;
+        tbodyHistorial.innerHTML = '<tr><td colspan="4" class="text-center">Cargando historial...</td></tr>';
+        modalHistorial.show();
+
+        const citas = await api(`${API_CITAS_URL}?cliente_id=${clienteId}`);
+        historialActual = citas || [];
+        renderizarHistorial(historialActual);
+    }
+
+    function renderizarHistorial(listaCitas) {
+        tbodyHistorial.innerHTML = '';
+        if (listaCitas && listaCitas.length > 0) {
+            listaCitas.forEach(cita => {
+                let badgeClass = '';
+                switch(cita.estado) {
+                    case 'confirmada': badgeClass = 'bg-success'; break;
+                    case 'cancelada': badgeClass = 'bg-danger'; break;
+                    case 'completada': badgeClass = 'bg-primary'; break;
+                    default: badgeClass = 'bg-secondary';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${cita.fecha}</td>
+                    <td>${cita.hora.substring(0, 5)}</td>
+                    <td class="text-start">${cita.servicio_solicitado || 'N/A'}</td>
+                    <td><span class="badge ${badgeClass}">${cita.estado}</span></td>
+                `;
+                tbodyHistorial.appendChild(tr);
+            });
+        } else {
+            tbodyHistorial.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Este cliente no tiene citas registradas.</td></tr>';
+        }
+    }
+
+    filtroHistorial.addEventListener('input', (e) => {
+        const termino = e.target.value.toLowerCase();
+        const filtrados = historialActual.filter(c => 
+            c.fecha.includes(termino) || 
+            (c.servicio_solicitado && c.servicio_solicitado.toLowerCase().includes(termino)) ||
+            c.estado.toLowerCase().includes(termino)
+        );
+        renderizarHistorial(filtrados);
+    });
+
+    // --- CARGA DE CLIENTES ---
     async function cargarClientes() {
         const dni = buscarDNI.value;
         const nombre = buscarNombre.value;
-
         const params = new URLSearchParams();
         if (dni) params.append('dni', dni);
         if (nombre) params.append('nombre', nombre);
 
-        clientesData = await api(`${API_URL}?${params.toString()}`);
+        clientesData = await api(`${API_CLIENTES_URL}?${params.toString()}`);
         renderizarTabla();
     }
 
-    // --- MANEJADORES DE EVENTOS ---
+    // --- EVENT LISTENERS PRINCIPALES ---
     btnBuscar.addEventListener('click', cargarClientes);
     
     btnLimpiar.addEventListener('click', () => {
@@ -91,12 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     formAgregar.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = Object.fromEntries(new FormData(e.target));
-        
-        const result = await api(API_URL, {
+        const result = await api(API_CLIENTES_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(Object.fromEntries(new FormData(e.target)))
         });
         if (result && result.id) {
             modalAgregar.hide();
@@ -107,12 +166,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     formEditar.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = Object.fromEntries(new FormData(e.target));
-        
-        const result = await api(API_URL, {
+        const result = await api(API_CLIENTES_URL, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(Object.fromEntries(new FormData(e.target)))
         });
         if (result) {
             modalEditar.hide();
@@ -124,10 +181,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.closest('button');
         if (!button) return;
 
+        const tr = button.closest('tr');
+        const cliente = JSON.parse(tr.dataset.cliente);
+
+        if (button.classList.contains('btn-historial')) {
+            filtroHistorial.value = ''; 
+            cargarHistorial(cliente.id, cliente.nombre);
+        }
+
         if (button.classList.contains('btn-edit')) {
-            const tr = button.closest('tr');
-            const cliente = JSON.parse(tr.dataset.cliente);
-            
             formEditar.querySelector('[name="id"]').value = cliente.id;
             formEditar.querySelector('[name="nombre"]').value = cliente.nombre;
             formEditar.querySelector('[name="dni_ruc"]').value = cliente.dni_ruc;
@@ -144,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnConfirmarEliminar.addEventListener('click', async () => {
         if (clienteIdParaEliminar) {
-            const result = await api(`${API_URL}?id=${clienteIdParaEliminar}`, { method: 'DELETE' });
+            const result = await api(`${API_CLIENTES_URL}?id=${clienteIdParaEliminar}`, { method: 'DELETE' });
             if (result) {
                 modalEliminar.hide();
                 cargarClientes();
@@ -153,6 +215,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- INICIALIZACIÓN ---
     cargarClientes();
 });

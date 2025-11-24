@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Script de gestión de citas admin cargado.");
 
-    const API_URL = 'http://localhost/cusquena/backend/api/controllers/gestionCitasAdmin.php';
+    const API_URL = 'http://localhost/cusquena/backend/api/controllers/vista_citas/gestionCitasAdmin.php';
 
     // --- REFERENCIAS AL DOM ---
     const tbodyCitas = document.querySelector('#tblCitas tbody');

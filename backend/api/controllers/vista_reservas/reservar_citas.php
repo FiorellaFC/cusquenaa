@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-$pdo = require_once "../../config/config.php";
+$pdo = require_once "../../../config/config.php";
 
 // --- CONFIGURACIÓN DE HORARIOS ---
 $HORA_INICIO = '08:00';

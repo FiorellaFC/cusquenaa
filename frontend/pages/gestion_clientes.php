@@ -53,12 +53,12 @@
             </script>
         </div>
 
+       
         <div id="layoutSidenav_content">
             <main class="container-xl my-4">
                 <div class="container-fluid px-4">
                     <h1 class="mb-4 text-center">Gestión de Clientes</h1>
 
-                    <!-- Buscadores y botón agregar -->
                     <div class="row mb-3 align-items-end">
                         <div class="col-md-4">
                             <label for="buscarDNI" class="form-label">Buscar por DNI/RUC:</label>
@@ -77,7 +77,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabla de clientes -->
                     <div class="table-responsive my-4">
                         <table id="tblClientes" class="table table-bordered table-hover text-center">
                             <thead>
@@ -90,7 +89,7 @@
                                 </tr>
                             </thead>
                             <tbody class="align-middle">
-                                <!-- Contenido dinámico desde JS -->
+                                <!-- JS llenará esto -->
                             </tbody>
                         </table>
                     </div>
@@ -109,25 +108,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="formAgregarCliente" novalidate>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Nombre:</label>
-                            <input type="text" class="form-control" name="nombre" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">DNI/RUC:</label>
-                            <input type="text" class="form-control" name="dni_ruc" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Teléfono:</label>
-                            <input type="tel" class="form-control" name="telefono">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Correo Electrónico:</label>
-                            <input type="email" class="form-control" name="email">
-                        </div>
-                        <div class="modal-footer d-flex justify-content-center">
-                            <button type="submit" class="btn btn-primary">Agregar</button>
-                        </div>
+                        <div class="mb-3"><label class="form-label fw-bold">Nombre:</label><input type="text" class="form-control" name="nombre" required></div>
+                        <div class="mb-3"><label class="form-label fw-bold">DNI/RUC:</label><input type="text" class="form-control" name="dni_ruc" required></div>
+                        <div class="mb-3"><label class="form-label fw-bold">Teléfono:</label><input type="tel" class="form-control" name="telefono"></div>
+                        <div class="mb-3"><label class="form-label fw-bold">Correo:</label><input type="email" class="form-control" name="email"></div>
+                        <div class="modal-footer d-flex justify-content-center"><button type="submit" class="btn btn-primary">Agregar</button></div>
                     </form>
                 </div>
             </div>
@@ -145,25 +130,11 @@
                 <div class="modal-body">
                     <form id="formEditarCliente" novalidate>
                         <input type="hidden" name="id">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Nombre:</label>
-                            <input type="text" class="form-control" name="nombre" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">DNI/RUC:</label>
-                            <input type="text" class="form-control" name="dni_ruc" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Teléfono:</label>
-                            <input type="tel" class="form-control" name="telefono">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Correo Electrónico:</label>
-                            <input type="email" class="form-control" name="email">
-                        </div>
-                        <div class="modal-footer d-flex justify-content-center">
-                            <button type="submit" class="btn btn-success">Modificar</button>
-                        </div>
+                        <div class="mb-3"><label class="form-label fw-bold">Nombre:</label><input type="text" class="form-control" name="nombre" required></div>
+                        <div class="mb-3"><label class="form-label fw-bold">DNI/RUC:</label><input type="text" class="form-control" name="dni_ruc" required></div>
+                        <div class="mb-3"><label class="form-label fw-bold">Teléfono:</label><input type="tel" class="form-control" name="telefono"></div>
+                        <div class="mb-3"><label class="form-label fw-bold">Correo:</label><input type="email" class="form-control" name="email"></div>
+                        <div class="modal-footer d-flex justify-content-center"><button type="submit" class="btn btn-success">Modificar</button></div>
                     </form>
                 </div>
             </div>
@@ -178,13 +149,49 @@
                     <h5 class="modal-title">¿Confirmar Eliminación?</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <p>¿Estás seguro de que deseas eliminar este cliente?</p>
-                    <p><strong>Esta acción es irreversible y eliminará el cliente permanentemente.</strong></p>
-                </div>
+                <div class="modal-body"><p>¿Estás seguro de que deseas eliminar este cliente?</p></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
                     <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Sí, eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL HISTORIAL (NUEVO) ================= -->
+    <div class="modal fade" id="modalHistorialCliente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-history me-2"></i>Historial de Citas: <span id="historialNombreCliente" class="fw-bold"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <!-- Filtro dentro del modal -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" id="filtroHistorial" class="form-control" placeholder="Buscar en el historial (fecha, servicio...)">
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover bg-white text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Servicio Solicitado</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyHistorial">
+                                <!-- Se llena con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
