@@ -1,44 +1,69 @@
 <?php
-// Define el tipo de contenido de la respuesta como JSON
+// Configuración de cabeceras y zona horaria
 header('Content-Type: application/json');
+date_default_timezone_set('America/Lima'); // Ajustado para Perú
 
-// Usamos tu archivo de conexión original
+// Conexión a la base de datos
 require_once "../../../includes/db.php"; 
 
-// --- CONFIGURACIÓN ---
+// --- CONFIGURACIÓN DEL HORARIO ---
 $HORA_INICIO = '08:00';
 $HORA_FIN = '18:00'; 
 $INTERVALO_MINUTOS = 60; 
-$TIEMPO_BLOQUEO_SEGUNDOS = 300;
+$TIEMPO_BLOQUEO_SEGUNDOS = 300; // 5 minutos
 
-// --- PROCESAMIENTO ---
+// --- PROCESAMIENTO DE SOLICITUD ---
 $method = $_SERVER['REQUEST_METHOD'];
 $data = json_decode(file_get_contents('php://input'), true);
 
-// Limpieza de bloqueos expirados
+// Limpieza automática de bloqueos expirados
 try {
     $conn->query("DELETE FROM horarios_bloqueados WHERE expires_at < NOW()");
 } catch (PDOException $e) {
-    // Silenciar error de limpieza
+    // Silenciar error de limpieza si la tabla está ocupada
 }
 
+// ==========================================
+// MÉTODO GET: OBTENER HORARIOS O SERVICIOS
+// ==========================================
 if ($method === 'GET') {
+    
+    // --- 1. NUEVA FUNCIONALIDAD: OBTENER LISTA DE SERVICIOS ---
+    // El frontend envía ?accion=obtener_servicios&tipo=Mantenimiento
+    if (isset($_GET['accion']) && $_GET['accion'] === 'obtener_servicios') {
+        $tipo = $_GET['tipo'] ?? 'Mantenimiento'; // Valor por defecto
+        try {
+            // Seleccionamos id, nombre y precio
+            $stmt = $conn->prepare("SELECT id, nombre, precio FROM servicios WHERE tipo = :tipo");
+            $stmt->execute(['tipo' => $tipo]);
+            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+        exit; // Terminamos la ejecución aquí para no devolver horarios
+    }
+
+    // --- 2. LÓGICA DE HORARIOS SEMANALES ---
     try {
-        // --- CÁLCULO SEMANAL ---
+        // Variables de fecha/hora actual para bloquear el pasado
         $hoy = new DateTime();
+        $fecha_actual_str = $hoy->format('Y-m-d');
+        $hora_actual_str = $hoy->format('H:i:s');
+
+        // Calcular el inicio de la semana (Lunes)
         $dia_semana = $hoy->format('N');
         $lunes = clone $hoy;
         $lunes->modify('-' . ($dia_semana - 1) . ' days');
         
         $fechas_semana = [];
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < 6; $i++) { // Lunes a Sábado
             $fechas_semana[] = (clone $lunes)->modify("+$i days")->format('Y-m-d');
         }
 
         $fecha_inicio_semana = $fechas_semana[0];
         $fecha_fin_semana = $fechas_semana[5];
 
-        // Citas confirmadas
+        // Consultar Citas Confirmadas
         $stmt_citas = $conn->prepare("SELECT fecha, hora FROM citas WHERE fecha BETWEEN :inicio AND :fin AND estado = 'confirmada'");
         $stmt_citas->execute(['inicio' => $fecha_inicio_semana, 'fin' => $fecha_fin_semana]);
         $citas_confirmadas_raw = $stmt_citas->fetchAll(PDO::FETCH_ASSOC);
@@ -47,7 +72,7 @@ if ($method === 'GET') {
             $citas_confirmadas[$cita['fecha']][] = $cita['hora'];
         }
 
-        // Horarios bloqueados
+        // Consultar Bloqueos Temporales
         $stmt_bloqueos = $conn->prepare("SELECT fecha, hora FROM horarios_bloqueados WHERE fecha BETWEEN :inicio AND :fin");
         $stmt_bloqueos->execute(['inicio' => $fecha_inicio_semana, 'fin' => $fecha_fin_semana]);
         $bloqueos_raw = $stmt_bloqueos->fetchAll(PDO::FETCH_ASSOC);
@@ -56,7 +81,7 @@ if ($method === 'GET') {
             $horarios_bloqueados[$bloqueo['fecha']][] = $bloqueo['hora'];
         }
 
-        // Armar respuesta
+        // Construir la respuesta
         $respuesta_semanal = [];
         $nombres_dias = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         
@@ -70,16 +95,30 @@ if ($method === 'GET') {
             $periodo = new DatePeriod($inicio_dt, $intervalo, $fin_dt);
 
             foreach ($periodo as $dt) {
-                $hora_str = $dt->format('H:i:s');
+                $hora_iteracion = $dt->format('H:i:s');
+                $hora_corta = $dt->format('H:i'); // Formato visual 08:00
                 $estado = 'disponible';
                 
-                if (isset($citas_confirmadas[$fecha_str]) && in_array($hora_str, $citas_confirmadas[$fecha_str])) {
-                    $estado = 'ocupado';
-                } elseif (isset($horarios_bloqueados[$fecha_str]) && in_array($hora_str, $horarios_bloqueados[$fecha_str])) {
-                    $estado = 'bloqueado';
+                // --- VALIDACIÓN DE TIEMPO PASADO ---
+                if ($fecha_str < $fecha_actual_str) {
+                    // Si la fecha es ayer o antes -> Bloqueado
+                    $estado = 'bloqueado'; 
+                } elseif ($fecha_str === $fecha_actual_str && $hora_iteracion < $hora_actual_str) {
+                    // Si es hoy, pero la hora ya pasó -> Bloqueado
+                    $estado = 'bloqueado'; 
+                }
+                // -----------------------------------
+
+                // Si aún está disponible por tiempo, verificar BD
+                if ($estado === 'disponible') {
+                    if (isset($citas_confirmadas[$fecha_str]) && in_array($hora_iteracion, $citas_confirmadas[$fecha_str])) {
+                        $estado = 'ocupado';
+                    } elseif (isset($horarios_bloqueados[$fecha_str]) && in_array($hora_iteracion, $horarios_bloqueados[$fecha_str])) {
+                        $estado = 'bloqueado';
+                    }
                 }
 
-                $horarios_del_dia[] = ['hora' => $dt->format('H:i'), 'estado' => $estado];
+                $horarios_del_dia[] = ['hora' => $hora_corta, 'estado' => $estado];
             }
             
             $respuesta_semanal[] = [
@@ -97,7 +136,11 @@ if ($method === 'GET') {
         echo json_encode(['error' => 'Error BD: ' . $e->getMessage()]);
     }
 
-} elseif ($method === 'POST') {
+} 
+// ==========================================
+// MÉTODO POST: BLOQUEAR, LIBERAR, CONFIRMAR
+// ==========================================
+elseif ($method === 'POST') {
     $accion = $data['accion'] ?? '';
     
     try {
@@ -129,24 +172,23 @@ if ($method === 'GET') {
             case 'confirmar':
                 $conn->beginTransaction();
 
-                // 1. Verificar bloqueo
+                // 1. Verificar que el bloqueo siga activo y pertenezca a la sesión
                 $sql_check = "SELECT id FROM horarios_bloqueados WHERE fecha = :fecha AND hora = :hora AND session_id = :session_id";
                 $stmt_check = $conn->prepare($sql_check);
                 $stmt_check->execute(['fecha' => $data['fecha'], 'hora' => $data['hora'], 'session_id' => $data['session_id']]);
 
                 if ($stmt_check->fetch()) {
                     
-                    // --- LÓGICA DE CLIENTE / DNI ---
+                    // --- LÓGICA DE CLIENTE (Buscar o Crear) ---
                     $cliente_id = null;
                     $dni = $data['dni_cliente'];
 
-                    // Buscar si el cliente ya existe
                     $stmt_cliente = $conn->prepare("SELECT id FROM clientes WHERE dni_ruc = :dni");
                     $stmt_cliente->execute(['dni' => $dni]);
                     $cliente_existente = $stmt_cliente->fetch(PDO::FETCH_ASSOC);
 
                     if ($cliente_existente) {
-                        // Existe: Actualizamos datos y obtenemos ID
+                        // Cliente existe: Actualizamos datos
                         $cliente_id = $cliente_existente['id'];
                         $sql_update = "UPDATE clientes SET nombre = :nombre, telefono = :telefono, email = :email WHERE id = :id";
                         $stmt_update = $conn->prepare($sql_update);
@@ -157,7 +199,7 @@ if ($method === 'GET') {
                             'id' => $cliente_id
                         ]);
                     } else {
-                        // No existe: Creamos nuevo cliente
+                        // Cliente nuevo: Insertamos
                         $sql_create = "INSERT INTO clientes (dni_ruc, nombre, telefono, email) VALUES (:dni, :nombre, :telefono, :email)";
                         $stmt_create = $conn->prepare($sql_create);
                         $stmt_create->execute([
@@ -168,11 +210,10 @@ if ($method === 'GET') {
                         ]);
                         $cliente_id = $conn->lastInsertId();
                     }
-                    // -------------------------------
 
-                    // 2. Insertar la cita vinculada al cliente_id
-                    $sql_insert = "INSERT INTO citas (cliente_id, fecha, hora, nombre_cliente, telefono_cliente, email_cliente, servicio_solicitado) 
-                                   VALUES (:cliente_id, :fecha, :hora, :nombre, :telefono, :email, :servicio)";
+                    // 2. Insertar la CITA
+                    $sql_insert = "INSERT INTO citas (cliente_id, fecha, hora, nombre_cliente, telefono_cliente, email_cliente, servicio_id) 
+                                   VALUES (:cliente_id, :fecha, :hora, :nombre, :telefono, :email, :servicio_id)";         
                     $stmt_insert = $conn->prepare($sql_insert);
                     $stmt_insert->execute([
                         'cliente_id' => $cliente_id,
@@ -181,10 +222,10 @@ if ($method === 'GET') {
                         'nombre' => $data['nombre_cliente'],
                         'telefono' => $data['telefono_cliente'],
                         'email' => $data['email_cliente'],
-                        'servicio' => $data['servicio_solicitado']
+                        'servicio_id' => $data['servicio_solicitado'] // Ahora el JS nos manda el ID aquí
                     ]);
                     
-                    // 3. Eliminar el bloqueo
+                    // 3. Eliminar el bloqueo temporal
                     $sql_delete = "DELETE FROM horarios_bloqueados WHERE fecha = :fecha AND hora = :hora";
                     $stmt_delete = $conn->prepare($sql_delete);
                     $stmt_delete->execute(['fecha' => $data['fecha'], 'hora' => $data['hora']]);
@@ -207,9 +248,9 @@ if ($method === 'GET') {
             $conn->rollBack();
         }
         http_response_code(500);
-        // Manejo específico de duplicados (por si acaso)
+        // Manejo de errores (Duplicidad, etc.)
         if ($e->getCode() == 23000) {
-             echo json_encode(['error' => 'Error de duplicidad (DNI o Horario ya registrado).']);
+             echo json_encode(['error' => 'Error: Ya existe una cita registrada para este horario.']);
         } else {
              echo json_encode(['error' => 'Error interno: ' . $e->getMessage()]);
         }

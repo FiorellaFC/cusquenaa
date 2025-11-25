@@ -1,130 +1,176 @@
 <?php
-// Generamos un ID de sesión único para cada visita.
+// LÓGICA DE SESIÓN (Intacta)
 $session_id = uniqid('reserva_', true);
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservar Cita - Lubricentro La Cusqueña</title>
-    
-    <link href="../css/bootstrap.css" rel="stylesheet" /> <!-- Ajusta tu ruta de CSS -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
     <style>
-        body { background-color: #e9ecef; }
-        .container { max-width: 960px; }
-        .card-header { background-color: #0d6efd; color: white; }
-        .accordion-button { font-weight: 600; font-size: 1.1rem; }
-        .accordion-button:not(.collapsed) { color: #0c63e4; background-color: #e7f1ff; }
-        .horarios-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-            gap: 1rem; 
-            padding: 1rem;
-        }
-        .horario-btn {
-            border: 2px solid;
-            font-weight: 500;
-            transition: all 0.2s ease-in-out;
-            padding: 0.75rem;
-        }
-        .horario-btn.disponible { border-color: #198754; color: #198754; }
-        .horario-btn.disponible:hover { background-color: #198754; color: white; transform: translateY(-2px); }
-        .horario-btn.seleccionado { 
-            background-color: #0d6efd; 
-            color: white; 
-            border-color: #0d6efd;
-            box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
-            transform: scale(1.05);
-        }
-        .horario-btn.ocupado, .horario-btn.bloqueado { 
-            background-color: #6c757d;
-            border-color: #6c757d;
-            color: white; 
-            cursor: not-allowed; 
-            opacity: 0.6; 
-        }
-        #cronometro-container {
-            background-color: #fff3cd;
-            border: 1px solid #ffe69c;
-            border-radius: .375rem;
-        }
-        #cronometro { font-size: 1.5rem; font-weight: bold; color: #dc3545; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f2f2f2; color: #333; }
+
+        /* AVISO SUPERIOR */
+        .aviso-container { background-color: #1a1b1e; color: white; padding: 40px 20px; text-align: center; width: 100%; border-bottom: 4px solid #d4af37; }
+        .horario-highlight { font-weight: 700; color: #fff; display: block; margin-bottom: 5px; font-size: 1.1rem; }
+        .aviso-text { font-size: 0.9rem; opacity: 0.8; margin-top: 15px; margin-bottom: 0; }
+
+        /* ENCABEZADO */
+        .main-title { text-align: center; margin-top: 50px; font-weight: 600; font-size: 2.5rem; text-transform: uppercase; margin-bottom: 10px; }
+        .breadcrumb-custom { text-align: center; color: #6c757d; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 50px; }
+
+        /* TARJETAS Y CONTENEDORES */
+        .card-clean { background: white; border-radius: 8px; border: 1px solid #e0e0e0; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .section-title { font-weight: 600; font-size: 1.25rem; margin-bottom: 20px; }
+        .header-dark { background-color: #000; color: #d4af37; padding: 15px 20px; font-weight: 600; border-radius: 8px 8px 0 0; display: flex; align-items: center; }
+
+        /* BOTONES DE HORARIO */
+        .horario-btn { border: 1px solid #198754; color: #198754; background-color: white; padding: 10px 20px; border-radius: 5px; font-weight: 500; width: 100px; transition: all 0.2s; cursor: pointer; }
+        .horario-btn:hover:not(:disabled), .horario-btn.seleccionado { background-color: #198754; color: white; box-shadow: 0 4px 8px rgba(25, 135, 84, 0.2); transform: translateY(-2px); }
+        .horario-btn:disabled { background-color: #e9ecef; border-color: #dee2e6; color: #adb5bd; cursor: not-allowed; opacity: 0.6; }
+
+        /* CRONÓMETRO */
+        #cronometro-container { background: #fff3cd; border: 1px solid #ffe69c; padding: 10px; text-align: center; margin-bottom: 20px; border-radius: 8px; display: none; }
+        #cronometro { font-weight: bold; color: #dc3545; font-size: 1.2rem; }
+
+        /* MODAL CHECKMARK */
+        .checkmark-circle { width: 80px; height: 80px; position: relative; display: inline-block; margin: 0 auto 20px auto; }
+        .checkmark-circle .background { width: 80px; height: 80px; border-radius: 50%; background: #198754; position: absolute; top: 0; left: 0; }
+        .checkmark { border-radius: 5px; }
+        .checkmark:after { position: absolute; display: block; content: ""; left: 30px; top: 16px; width: 20px; height: 40px; border: solid white; border-width: 0 6px 6px 0; transform: rotate(45deg); }
+
+        footer { background-color: #212529; color: white; text-align: center; padding: 30px 0; margin-top: 80px; font-size: 0.9rem; }
     </style>
 </head>
-<body>
-    <div class="container my-5">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h2>Reservar Cita en Lubricentro</h2>
-            </div>
-            <div class="card-body p-4">
 
-                <!-- PASO 1: SELECCIONAR DÍA Y HORA -->
-                <div class="mb-4">
-                    <h4 class="border-bottom pb-2 mb-3"><i class="fas fa-calendar-alt me-2"></i>Paso 1: Selecciona un día y un horario</h4>
-                    
-                    <div class="accordion" id="acordeonSemana">
-                        <div class="text-center p-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Cargando horarios de la semana...</span>
-                            </div>
-                        </div>
+<body data-tipo-servicio="Mantenimiento">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container"><a class="navbar-brand fw-bold" href="#" style="color: #d4af37;">Lubricentro La Cusqueña</a></div>
+    </nav>
+
+    <div class="aviso-container">
+        <p class="mb-2">Estimados clientes, nuestro horario de atención es de:</p>
+        <span class="horario-highlight">Lunes a Sábados: 8:00 a.m. a 6:00 p.m.</span>
+        <span class="horario-highlight">Domingos: 8:00 a.m. a 1:00 p.m.</span>
+        <p class="aviso-text">Recuerda que contamos con un tiempo de tolerancia de 10 minutos.</p>
+    </div>
+
+    <h1 class="main-title" data-aos="fade-up">RESERVAR CITA</h1>
+    <div class="breadcrumb-custom" data-aos="fade-up">HOME / RESERVAS</div>
+
+    <div class="container mb-5" style="max-width: 900px;">
+
+        <div class="card-clean" data-aos="fade-up">
+            <h4 class="section-title">Selecciona un día y un horario</h4>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Elige una fecha:</label>
+                <input type="date" id="fecha" class="form-control form-control-lg">
+            </div>
+
+            <div id="contenedorHorarios" style="display:none;" class="mt-4">
+                <h5 class="fw-bold mb-3" style="font-size: 1rem;">Horarios disponibles</h5>
+                <div class="d-flex flex-wrap gap-2" id="listaHorarios"></div>
+            </div>
+        </div>
+
+        <div id="cronometro-container">
+            Tiempo restante: <span id="cronometro">05:00</span>
+        </div>
+
+        <div id="paso2-datos-cliente" style="display: none;">
+            
+            <div class="header-dark">Resumen de su cita</div>
+            <div class="card-clean" style="border-radius: 0 0 8px 8px; margin-top: -1px; border-top: 0; padding: 20px;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">Día seleccionado</small>
+                        <h4 id="resumenDia" class="fw-bold">--</h4>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Hora seleccionada</small>
+                        <h4 id="resumenHora" class="fw-bold">--</h4>
                     </div>
                 </div>
-                
-                <!-- CONTENEDOR DEL CRONÓMETRO -->
-                <div id="cronometro-container" class="text-center p-3 my-4" style="display: none;">
-                    <h5>Tiempo restante para confirmar</h5>
-                    <p>Tu horario seleccionado se mantendrá reservado por: <span id="cronometro">05:00</span></p>
-                </div>
+            </div>
 
-                <!-- PASO 2: DATOS DEL CLIENTE (se muestra al seleccionar un horario) -->
-                <div id="paso2-datos-cliente" style="display: none;">
-                    <h4 class="border-bottom pb-2 mb-3"><i class="fas fa-user-edit me-2"></i>Paso 2: Completa tus datos</h4>
-                    <form id="formConfirmarCita">
-                        <input type="hidden" name="session_id" value="<?= htmlspecialchars($session_id) ?>">
-                        <input type="hidden" name="fecha">
-                        <input type="hidden" name="hora">
+            <div class="header-dark mt-4"><i class="fas fa-user me-2"></i> Complete sus datos</div>
+            <div class="card-clean" style="border-radius: 0 0 8px 8px; margin-top: -1px; border-top: 0;">
+                
+                <form id="formConfirmarCita">
+                    <input type="hidden" name="session_id" value="<?= htmlspecialchars($session_id) ?>">
+                    <input type="hidden" name="fecha">
+                    <input type="hidden" name="hora">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Nombre completo</label>
+                            <input type="text" name="nombre_cliente" class="form-control" required placeholder="Nombre y Apellidos">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Teléfono</label>
+                            <input type="tel" name="telefono_cliente" class="form-control" required placeholder="999 999 999">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">DNI / RUC</label>
+                            <input type="text" name="dni_cliente" class="form-control" required placeholder="Ingrese su documento">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Correo electrónico</label>
+                            <input type="email" name="email_cliente" class="form-control" required placeholder="ejemplo@correo.com">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Servicio solicitado</label>
+                        <select name="servicio_solicitado" class="form-select" required>
+                            <option value="">Cargando servicios...</option>
+                        </select>
                         
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="dni_cliente" class="form-label">DNI / RUC</label>
-                                <input type="text" class="form-control" id="dni_cliente" name="dni_cliente" required>
+                        <div id="precio-estimado" class="alert alert-warning mt-2 p-2" style="display: none; font-size: 0.9rem; border-left: 4px solid #d4af37; background-color: #fff3cd; color: #856404;">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="nombre_cliente" class="form-label">Nombre Completo</label>
-                                <input type="text" class="form-control" id="nombre_cliente" name="nombre_cliente" required>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="telefono_cliente" class="form-label">Teléfono</label>
-                                <input type="tel" class="form-control" id="telefono_cliente" name="telefono_cliente" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="email_cliente" class="form-label">Correo Electrónico</label>
-                                <input type="email" class="form-control" id="email_cliente" name="email_cliente" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="servicio_solicitado" class="form-label">Servicio Requerido (Opcional)</label>
-                            <input type="text" class="form-control" id="servicio_solicitado" name="servicio_solicitado" placeholder="Ej: Cambio de aceite, revisión de frenos...">
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">Confirmar Mi Cita</button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-dark btn-lg px-5" style="border: 1px solid #d4af37;">Confirmar mi reserva</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <script src="../js/bootstrap.bundle.min.js"></script> <!-- Ajusta tu ruta de JS -->
-    <!-- ASEGÚRATE DE QUE ESTA RUTA ES CORRECTA -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-4">
+                <div class="checkmark-circle">
+                    <div class="background"></div>
+                    <div class="checkmark"></div>
+                </div>
+                <h3 class="mt-3 fw-bold">¡Registro confirmado!</h3>
+                <p>Tu servicio fue registrado correctamente.</p>
+                <button type="button" class="btn btn-dark mt-3 w-100" onclick="location.reload()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer><div class="container">© 2025 Lubricentro La Cusqueña — Todos los derechos reservados</div></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script> AOS.init(); </script>
+
     <script src="../js/functions/reservar_cita.js"></script>
+
 </body>
 </html>
-

@@ -1,344 +1,235 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- CONFIGURACIÓN Y REFERENCIAS AL DOM ---
-    const API_URL = "http://localhost/cusquena/backend/api/controllers/vista_citas/gestionCitas.php"; // ¡Verifica que esta ruta sea correcta!
-    let SESSION_ID; // Se obtendrá después de cargar los horarios iniciales
-    const TIEMPO_BLOQUEO = 300; // 300 segundos = 5 minutos
+    const API_URL = "http://localhost/cusquena/backend/api/controllers/vista_reservas/gestionCitas.php"; 
+    const TIEMPO_BLOQUEO = 300; 
 
-    const acordeonContainer = document.getElementById('acordeonSemana');
+    // REFERENCIAS DOM
+    const fechaInput = document.getElementById('fecha');
+    const contenedorHorarios = document.getElementById('contenedorHorarios');
+    const listaHorarios = document.getElementById('listaHorarios');
     const paso2Formulario = document.getElementById('paso2-datos-cliente');
     const cronometroContainer = document.getElementById('cronometro-container');
     const cronometroDisplay = document.getElementById('cronometro');
     const formConfirmarCita = document.getElementById('formConfirmarCita');
-    const sessionIdInput = document.querySelector('[name="session_id"]'); // Referencia al input hidden
+    const sessionIdInput = document.querySelector('[name="session_id"]');
+    
+    // NUEVO: Referencias para servicios y precios
+    const selectServicios = document.querySelector('[name="servicio_solicitado"]');
+    const TIPO_SERVICIO = document.body.getAttribute('data-tipo-servicio') || 'Mantenimiento';
 
+    let SESSION_ID = sessionIdInput ? sessionIdInput.value : null;
     let cronometroIntervalo;
     let tiempoRestante = TIEMPO_BLOQUEO;
-    let horarioSeleccionado = null; // Guardará el botón del horario seleccionado
-    let isLoading = false; // Flag para evitar cargas múltiples
+    let horarioSeleccionado = null; 
+    let datosSemanaCache = []; 
 
-    // --- FUNCIÓN GENÉRICA PARA LLAMADAS A LA API ---
-    async function api(options = {}) {
+    // 1. CARGAR DATOS INICIALES (HORARIOS Y SERVICIOS)
+    async function cargarDatosIniciales() {
+        const hoy = new Date().toISOString().split("T")[0];
+        if(fechaInput) fechaInput.min = hoy;
+
         try {
-            const response = await fetch(API_URL, options);
-            if (!response.ok) {
-                let errorData;
-                try {
-                    errorData = await response.json();
-                } catch (e) {
-                    // Si la respuesta no es JSON (ej. error 500 con HTML)
-                    errorData = { error: `Error del servidor (${response.status})` };
-                }
-                throw new Error(errorData.error || `Error: ${response.statusText}`);
-            }
-            // Manejar respuesta 204 No Content (puede ocurrir en 'liberar')
-             if (response.status === 204) {
-                 return { success: true, message: 'Operación completada (No Content).' }; // Devuelve un objeto estándar
-             }
-            return await response.json();
+            // Cargar Horarios
+            const response = await fetch(API_URL, { method: 'GET' });
+            if (!response.ok) throw new Error('Error API Horarios');
+            datosSemanaCache = await response.json();
+            
+            // Cargar Servicios (NUEVO)
+            await cargarServicios();
+            
+            console.log("Sistema iniciado correctamente.");
         } catch (error) {
-            console.error("Error detallado en la API:", error); // Log más detallado en consola
-            alert('Error al comunicarse con el servidor: ' + error.message);
-            // --- CORRECCIÓN CLAVE: NO RECARGAR AUTOMÁTICAMENTE ---
-            // Simplemente retornamos null para indicar que hubo un error.
-            return null;
+            console.error(error);
+            alert("Error de conexión con el servidor.");
         }
     }
 
-    // --- LÓGICA DE LA APLICACIÓN ---
+    // --- FUNCIÓN PARA CARGAR SERVICIOS DESDE BD ---
+    async function cargarServicios() {
+        if (!selectServicios) return;
+        try {
+            const url = `${API_URL}?accion=obtener_servicios&tipo=${TIPO_SERVICIO}`;
+            const response = await fetch(url);
+            const servicios = await response.json();
 
-    /**
-     * Carga los horarios de toda la semana desde la API y construye el acordeón.
-     */
-    async function cargarHorariosSemanales() {
-        if (isLoading) return; // Evitar recargas simultáneas
-        isLoading = true;
-        console.log("Iniciando carga de horarios..."); // Log para depuración
+            selectServicios.innerHTML = '<option value="" data-precio="0">Seleccione un servicio</option>';
 
-        // Resetea el estado visual inmediato
-        paso2Formulario.style.display = 'none';
-        detenerCronometro(); // Asegura que el cronómetro se detenga
-        horarioSeleccionado = null; // Resetea la selección
-
-        // Muestra un indicador de carga
-        acordeonContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
-
-        const semana = await api({ method: 'GET' });
-        acordeonContainer.innerHTML = ''; // Limpiar el indicador de carga
-
-        if (semana && Array.isArray(semana) && semana.length > 0) {
-             // Asignar el SESSION_ID si no está definido (importante hacerlo aquí)
-             if (!SESSION_ID && sessionIdInput) {
-                 SESSION_ID = sessionIdInput.value;
-                 console.log("SESSION_ID asignado:", SESSION_ID);
-             } else if (!sessionIdInput) {
-                  console.error("No se encontró el input 'session_id'. El bloqueo no funcionará.");
-                  alert("Error crítico: Falta el identificador de sesión. Contacte al administrador.");
-                  isLoading = false;
-                  return;
-             }
-
-
-            semana.forEach((dia, index) => {
-                const itemAcordeon = document.createElement('div');
-                itemAcordeon.className = 'accordion-item';
-
-                itemAcordeon.innerHTML = `
-                    <h2 class="accordion-header" id="heading-${index}">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}">
-                            ${dia.dia_nombre} - <small class="ms-2 fw-normal">${dia.fecha_completa}</small>
-                        </button>
-                    </h2>
-                    <div id="collapse-${index}" class="accordion-collapse collapse" data-bs-parent="#acordeonSemana">
-                        <div class="accordion-body">
-                            <div class="horarios-grid" id="grid-${dia.fecha_iso}">
-                                <!-- Horarios se insertarán aquí -->
-                            </div>
-                        </div>
-                    </div>
-                `;
-                acordeonContainer.appendChild(itemAcordeon);
-
-                const grid = document.getElementById(`grid-${dia.fecha_iso}`);
-                if (dia.horarios && dia.horarios.length > 0) {
-                    dia.horarios.forEach(h => {
-                        const btn = document.createElement('button');
-                        btn.className = `btn horario-btn ${h.estado}`;
-                        btn.textContent = h.hora;
-                        btn.dataset.hora = h.hora;
-                        btn.dataset.fecha = dia.fecha_iso;
-                        if (h.estado !== 'disponible') {
-                            btn.disabled = true;
-                        }
-                        btn.addEventListener('click', () => seleccionarHorario(btn));
-                        grid.appendChild(btn);
-                    });
-                } else {
-                    grid.innerHTML = '<p class="text-center text-muted m-0">No hay citas disponibles para este día.</p>';
-                }
+            if(Array.isArray(servicios)) {
+                servicios.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.id;               
+                option.textContent = s.nombre;
+                option.dataset.precio = s.precio; 
+                selectServicios.appendChild(option);
             });
-        } else if (semana) { // Si la API devolvió algo, pero no es el array esperado
-             console.error("Respuesta inesperada de la API:", semana);
-             acordeonContainer.innerHTML = '<p class="text-center text-danger">Error al cargar los horarios. Intente recargar la página.</p>';
-        } else { // Si la API devolvió null (por el catch)
-             acordeonContainer.innerHTML = '<p class="text-center text-danger">No se pudieron cargar los horarios. Verifique su conexión o intente más tarde.</p>';
+            }
+        } catch (e) {
+            console.error("Error cargando servicios:", e);
+            selectServicios.innerHTML = '<option value="">Error cargando lista</option>';
         }
-        isLoading = false;
-        console.log("Carga de horarios finalizada.");
     }
 
-    /**
-     * Se ejecuta cuando un usuario hace clic en un botón de horario.
-     * @param {HTMLElement} btn - El botón del horario que fue presionado.
-     */
-    async function seleccionarHorario(btn) {
-         if (!SESSION_ID) {
-             alert("Error: No se pudo identificar la sesión. Recargue la página.");
-             return;
-         }
-
-        // Si ya hay un horario seleccionado, lo liberamos primero
-        let liberacionExitosa = true;
-        if (horarioSeleccionado && horarioSeleccionado !== btn) {
-            liberacionExitosa = await liberarHorarioSeleccionado();
-            // Si la liberación falla, no continuamos para evitar inconsistencias
-             if (!liberacionExitosa) {
-                 alert("Hubo un problema al liberar el horario anterior. Se recargarán los horarios.");
-                 cargarHorariosSemanales();
-                 return;
-             }
-             // Si la liberación fue exitosa, desmarcar visualmente el anterior
-             horarioSeleccionado.classList.remove('seleccionado');
-             horarioSeleccionado.classList.add('disponible'); // Asumimos que vuelve a estar disponible
-             horarioSeleccionado = null; // Importante resetear aquí
-        }
-
-        // Si el usuario vuelve a hacer clic en el mismo horario (para deseleccionarlo)
-        if (horarioSeleccionado === btn) {
-            liberacionExitosa = await liberarHorarioSeleccionado();
-            if(liberacionExitosa) {
-                horarioSeleccionado = null;
-                detenerCronometro();
-                paso2Formulario.style.display = 'none';
-                btn.classList.remove('seleccionado');
-                btn.classList.add('disponible');
-            } else {
-                 alert("Hubo un problema al liberar el horario. Se recargarán los horarios.");
-                 cargarHorariosSemanales();
+    // --- EVENTO: MOSTRAR PRECIO AL CAMBIAR SELECT ---
+    if(selectServicios) {
+        selectServicios.addEventListener('change', function() {
+            const precio = this.options[this.selectedIndex].dataset.precio;
+            const divPrecio = document.getElementById('precio-estimado');
+            
+            if (divPrecio) {
+                if (precio > 0) {
+                    divPrecio.style.display = 'block';
+                    divPrecio.innerHTML = `<i class="fas fa-tag me-2"></i>Precio base estimado: <strong>S/. ${parseFloat(precio).toFixed(2)}</strong>`;
+                } else if (this.value !== "") {
+                    divPrecio.style.display = 'block';
+                    divPrecio.innerHTML = `<i class="fas fa-info-circle me-2"></i>Precio sujeto a evaluación en taller.`;
+                } else {
+                    divPrecio.style.display = 'none';
+                }
             }
+        });
+    }
+
+    // 2. DETECTAR CAMBIO EN EL INPUT FECHA
+    if(fechaInput) {
+        fechaInput.addEventListener('change', function() {
+            renderizarBotonesParaFecha(this.value);
+        });
+    }
+
+    // 3. RENDERIZAR BOTONES
+    function renderizarBotonesParaFecha(fecha) {
+        listaHorarios.innerHTML = ''; 
+        contenedorHorarios.style.display = 'none';
+        paso2Formulario.style.display = 'none';
+        detenerCronometro();
+        horarioSeleccionado = null;
+
+        const diaData = datosSemanaCache.find(d => d.fecha_iso === fecha);
+
+        if (!diaData) {
+            contenedorHorarios.style.display = 'block';
+            listaHorarios.innerHTML = '<div class="w-100 text-center text-muted">No hay horarios disponibles.</div>';
             return;
         }
 
-        // Bloquear el nuevo horario seleccionado
-        const hora = btn.dataset.hora;
-        const fecha = btn.dataset.fecha;
-        const horaConSegundos = `${hora}:00`; // Asegurarse de enviar con segundos
+        if (diaData.horarios && diaData.horarios.length > 0) {
+            diaData.horarios.forEach(h => {
+                const btn = document.createElement('button');
+                btn.className = 'horario-btn'; 
+                btn.textContent = h.hora;
+                btn.type = 'button';
+                
+                btn.dataset.hora = h.hora;
+                btn.dataset.fecha = diaData.fecha_iso;
 
-        const result = await api({
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accion: 'bloquear', fecha, hora: horaConSegundos, session_id: SESSION_ID })
-        });
-
-        if (result && result.success) {
-            // Desmarcar visualmente cualquier otra selección residual (por si acaso)
-            document.querySelectorAll('.horario-btn.seleccionado').forEach(b => b.classList.remove('seleccionado'));
-
-            horarioSeleccionado = btn;
-            btn.classList.remove('disponible');
-            btn.classList.add('seleccionado');
-
-            // Llenar y mostrar el formulario
-            paso2Formulario.style.display = 'block';
-            formConfirmarCita.querySelector('[name="fecha"]').value = fecha;
-            formConfirmarCita.querySelector('[name="hora"]').value = horaConSegundos;
-            formConfirmarCita.querySelector('[name="session_id"]').value = SESSION_ID; // Asegurarse de que el form tenga el session_id
-
-            iniciarCronometro();
-        } else {
-             // Si el bloqueo falla (ej. alguien lo tomó justo ahora), recargar horarios
-             alert("Lo sentimos, este horario acaba de ser ocupado. Por favor, seleccione otro.");
-             cargarHorariosSemanales();
+                if (h.estado !== 'disponible') {
+                    btn.disabled = true;
+                    btn.title = "No disponible";
+                } else {
+                    btn.addEventListener('click', () => procesarSeleccion(btn));
+                }
+                
+                listaHorarios.appendChild(btn);
+            });
+            contenedorHorarios.style.display = 'block';
         }
     }
 
-    /**
-     * Libera el horario que estaba seleccionado temporalmente.
-     * @returns {Promise<boolean>} - True si la liberación fue exitosa o no necesaria, False si falló.
-     */
-    async function liberarHorarioSeleccionado() {
-        if (!horarioSeleccionado) return true; // No hay nada que liberar
+    // 4. PROCESAR SELECCIÓN
+    async function procesarSeleccion(btn) {
+        if (horarioSeleccionado && horarioSeleccionado !== btn) {
+            await liberarHorario(horarioSeleccionado);
+            horarioSeleccionado.classList.remove('seleccionado');
+        }
 
-        const hora = horarioSeleccionado.dataset.hora;
-        const fecha = horarioSeleccionado.dataset.fecha;
-        const horaConSegundos = `${hora}:00`;
+        const fecha = btn.dataset.fecha;
+        const hora = btn.dataset.hora + ":00"; 
 
-        console.log(`Intentando liberar: ${fecha} ${horaConSegundos} para ${SESSION_ID}`); // Log para depuración
-
-        const result = await api({
+        const result = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accion: 'liberar', fecha, hora: horaConSegundos, session_id: SESSION_ID })
-        });
+            body: JSON.stringify({ accion: 'bloquear', fecha, hora, session_id: SESSION_ID })
+        }).then(r => r.json());
 
-         // Consideramos exitoso si la API responde con success: true o si no devuelve contenido (204)
-         const exitoso = result && result.success;
-         if (exitoso) {
-             console.log(`Horario ${fecha} ${horaConSegundos} liberado.`);
-             // Solo reseteamos horarioSeleccionado aquí si la liberación es exitosa
-             const btnSeleccionado = horarioSeleccionado; // Guardar referencia temporal
-             horarioSeleccionado = null; // Marcar como liberado lógicamente
-             // Actualizar visualmente si el botón todavía existe en el DOM
-             if (btnSeleccionado && document.body.contains(btnSeleccionado)) {
-                btnSeleccionado.classList.remove('seleccionado');
-                btnSeleccionado.classList.add('disponible');
-             }
+        if (result.success) {
+            document.querySelectorAll('.horario-btn').forEach(b => b.classList.remove('seleccionado'));
+            btn.classList.add('seleccionado');
+            horarioSeleccionado = btn;
 
-         } else {
-            console.error("Falló la liberación del horario.");
-            // No reseteamos horarioSeleccionado aquí, la recarga lo hará
-         }
-         return exitoso; // Devolver si fue exitoso o no
+            document.getElementById('resumenDia').textContent = fecha;
+            document.getElementById('resumenHora').textContent = btn.dataset.hora;
+            document.querySelector('[name="fecha"]').value = fecha;
+            document.querySelector('[name="hora"]').value = hora;
+            
+            paso2Formulario.style.display = 'block';
+            paso2Formulario.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            iniciarCronometro();
+        } else {
+            alert("Ese horario ya no está disponible.");
+            cargarDatosIniciales().then(() => renderizarBotonesParaFecha(fecha));
+        }
     }
 
+    async function liberarHorario(btn) {
+        if(!btn) return;
+        const fecha = btn.dataset.fecha;
+        const hora = btn.dataset.hora + ":00";
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accion: 'liberar', fecha, hora, session_id: SESSION_ID })
+        });
+    }
 
-    // --- FUNCIONES DEL CRONÓMETRO ---
+    // 5. CONFIRMAR CITA
+    formConfirmarCita.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!horarioSeleccionado) return alert("Selecciona un horario.");
+
+        const formData = Object.fromEntries(new FormData(e.target));
+        formData.accion = 'confirmar';
+        formData.session_id = SESSION_ID;
+
+        const result = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        }).then(r => r.json());
+
+        if (result.success) {
+            detenerCronometro();
+            const modalEl = document.getElementById('confirmModal');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        } else {
+            alert("Error: " + (result.error || "Fallo al confirmar."));
+        }
+    });
+
+    // Utils Cronómetro
     function iniciarCronometro() {
-        detenerCronometro(); // Asegurarse de que no haya intervalos previos
+        detenerCronometro();
         tiempoRestante = TIEMPO_BLOQUEO;
         cronometroContainer.style.display = 'block';
-        actualizarDisplayCronometro(); // Mostrar tiempo inicial inmediatamente
-
+        cronometroDisplay.textContent = fmtTime(tiempoRestante);
         cronometroIntervalo = setInterval(() => {
             tiempoRestante--;
-            actualizarDisplayCronometro();
-
-            if (tiempoRestante <= 0) {
-                console.log("Tiempo expirado."); // Log para depuración
-                detenerCronometro(); // Detener el intervalo primero
-                alert('Tu tiempo de reserva ha expirado. El horario será liberado.');
-                // Intentar liberar antes de recargar
-                liberarHorarioSeleccionado().finally(() => {
-                    // Independientemente de si la liberación falló o no, recargamos la vista
-                    cargarHorariosSemanales();
-                });
+            cronometroDisplay.textContent = fmtTime(tiempoRestante);
+            if(tiempoRestante <= 0) {
+                alert("Tiempo expirado.");
+                liberarHorario(horarioSeleccionado).then(() => location.reload());
             }
         }, 1000);
     }
 
-     function actualizarDisplayCronometro() {
-         const minutos = Math.floor(tiempoRestante / 60).toString().padStart(2, '0');
-         const segundos = (tiempoRestante % 60).toString().padStart(2, '0');
-         cronometroDisplay.textContent = `${minutos}:${segundos}`;
-     }
-
-
     function detenerCronometro() {
-        if (cronometroIntervalo) {
-            clearInterval(cronometroIntervalo);
-            cronometroIntervalo = null; // Importante resetear la variable del intervalo
-        }
+        if(cronometroIntervalo) clearInterval(cronometroIntervalo);
         cronometroContainer.style.display = 'none';
     }
 
-    // --- MANEJADOR DEL FORMULARIO DE CONFIRMACIÓN ---
-    formConfirmarCita.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!horarioSeleccionado) {
-            alert("Por favor, selecciona un horario antes de confirmar.");
-            return;
-        }
+    function fmtTime(s) {
+        return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+    }
 
-        // Obtener datos del formulario, incluyendo los campos ocultos
-        const formData = Object.fromEntries(new FormData(e.target));
-        formData.accion = 'confirmar';
-        // Asegurarse de que session_id está en los datos a enviar
-        formData.session_id = SESSION_ID;
-
-        console.log("Enviando confirmación:", formData); // Log para depuración
-
-        const result = await api({
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-
-        if (result && result.success) {
-            detenerCronometro();
-            // Ya no necesitamos liberar explícitamente, el backend lo hace al confirmar
-            horarioSeleccionado = null; // Resetea la selección localmente
-            alert('¡Tu cita ha sido confirmada con éxito!');
-            // Recargar para ver el horario como 'ocupado'
-            cargarHorariosSemanales(); // Opcional: podrías solo actualizar el botón afectado
-            // window.location.reload(); // Evitar reload completo si no es necesario
-        } else {
-             // Si la confirmación falla (ej. el horario expiró o fue tomado)
-             alert(result?.error || "No se pudo confirmar la cita. Es posible que el horario ya no esté disponible.");
-             cargarHorariosSemanales(); // Recargar para ver el estado actual
-        }
-    });
-
-    // --- MANEJO DE CIERRE DE PESTAÑA/NAVEGADOR ---
-    window.addEventListener('beforeunload', (event) => {
-        // La especificación moderna no permite llamadas async/await aquí.
-        // Usamos navigator.sendBeacon para un intento de liberación "best-effort".
-        if (horarioSeleccionado) {
-            const hora = horarioSeleccionado.dataset.hora;
-            const fecha = horarioSeleccionado.dataset.fecha;
-            const data = JSON.stringify({
-                accion: 'liberar',
-                fecha,
-                hora: `${hora}:00`,
-                session_id: SESSION_ID
-            });
-            navigator.sendBeacon(API_URL, data);
-             console.log("Intentando liberar horario (sendBeacon) al cerrar la página...");
-        }
-        // No se puede mostrar un mensaje personalizado de forma fiable aquí.
-    });
-
-
-    // --- INICIO DE LA APLICACIÓN ---
-    console.log("Iniciando la aplicación de citas...");
-    cargarHorariosSemanales();
+    // Init
+    cargarDatosIniciales();
 });
-
