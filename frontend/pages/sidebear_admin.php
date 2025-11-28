@@ -19,6 +19,15 @@
                 <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
                 clientes
             </a>
+             <a class="nav-link" href="vistaContacto.php   ">
+                <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
+                contacto
+            </a>
+            <a class="nav-link" href="promociones_interno.php   ">
+                <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
+                promociones
+            </a>
+            
         </div>
     </div>
     <div class="sb-sidenav-footer">

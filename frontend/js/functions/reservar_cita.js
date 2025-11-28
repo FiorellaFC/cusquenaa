@@ -10,7 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const cronometroContainer = document.getElementById('cronometro-container');
     const cronometroDisplay = document.getElementById('cronometro');
     const formConfirmarCita = document.getElementById('formConfirmarCita');
+    const loadingOverlay = document.getElementById('loading-overlay'); // <-- NUEVA REFERENCIA
     const sessionIdInput = document.querySelector('[name="session_id"]');
+
+    // Nuevas funciones para el overlay
+function showLoading() {
+    if(loadingOverlay) {
+        loadingOverlay.style.display = 'flex'; // Usar 'flex' para centrar
+    }
+}
+
+function hideLoading() {
+    if(loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+}
     
     // NUEVO: Referencias para servicios y precios
     const selectServicios = document.querySelector('[name="servicio_solicitado"]');
@@ -180,56 +194,85 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. CONFIRMAR CITA
-    formConfirmarCita.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!horarioSeleccionado) return alert("Selecciona un horario.");
+        // 5. CONFIRMAR CITA (VERSIÓN CORREGIDA PARA VALIDACIÓN VISUAL)
+            formConfirmarCita.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!horarioSeleccionado) return alert("Selecciona un horario.");
 
-        const formData = Object.fromEntries(new FormData(e.target));
-        formData.accion = 'confirmar';
-        formData.session_id = SESSION_ID;
+                // Limpiar errores visuales previos
+                const inputCorreo = document.getElementById('txtCorreo'); // Asegúrate que tu input tenga este ID
+                const feedbackCorreo = document.getElementById('feedbackCorreo');
+                if(inputCorreo) {
+                    inputCorreo.classList.remove('is-invalid');
+                    if(feedbackCorreo) feedbackCorreo.textContent = '';
+                }
 
-        const result = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        }).then(r => r.json());
+                showLoading(); // Mostrar overlay
 
-        if (result.success) {
-            detenerCronometro();
-            const modalEl = document.getElementById('confirmModal');
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
-        } else {
-            alert("Error: " + (result.error || "Fallo al confirmar."));
-        }
-    });
+                const formData = Object.fromEntries(new FormData(e.target));
+                formData.accion = 'confirmar';
+                formData.session_id = SESSION_ID;
 
-    // Utils Cronómetro
-    function iniciarCronometro() {
-        detenerCronometro();
-        tiempoRestante = TIEMPO_BLOQUEO;
-        cronometroContainer.style.display = 'block';
-        cronometroDisplay.textContent = fmtTime(tiempoRestante);
-        cronometroIntervalo = setInterval(() => {
-            tiempoRestante--;
-            cronometroDisplay.textContent = fmtTime(tiempoRestante);
-            if(tiempoRestante <= 0) {
-                alert("Tiempo expirado.");
-                liberarHorario(horarioSeleccionado).then(() => location.reload());
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    // Importante: Ahora el PHP siempre devuelve JSON, incluso en error controlado
+                    const result = await response.json();
+
+                    if (result.success) {
+                        detenerCronometro();
+                        const modalEl = document.getElementById('confirmModal');
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    } else {
+                        // MANEJO DE ERRORES ESPECÍFICO
+                        if (result.tipo_error === 'email' && inputCorreo) {
+                            // Error sutil en el formulario (Estilo Google)
+                            inputCorreo.classList.add('is-invalid'); // Pone el borde rojo
+                            if(feedbackCorreo) feedbackCorreo.textContent = result.error; // Pone el texto rojo
+                            inputCorreo.focus();
+                        } else {
+                            // Error general del sistema (Alerta)
+                            alert("Aviso: " + (result.error || "Ocurrió un error inesperado."));
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error JS:", error);
+                    alert("Error de conexión. Verifica tu internet.");
+                } finally {
+                    hideLoading(); // Ocultar overlay siempre
+                }
+            });
+            
+            // Utils Cronómetro
+            function iniciarCronometro() {
+                detenerCronometro();
+                tiempoRestante = TIEMPO_BLOQUEO;
+                cronometroContainer.style.display = 'block';
+                cronometroDisplay.textContent = fmtTime(tiempoRestante);
+                cronometroIntervalo = setInterval(() => {
+                    tiempoRestante--;
+                    cronometroDisplay.textContent = fmtTime(tiempoRestante);
+                    if(tiempoRestante <= 0) {
+                        alert("Tiempo expirado.");
+                        liberarHorario(horarioSeleccionado).then(() => location.reload());
+                    }
+                }, 1000);
             }
-        }, 1000);
-    }
 
-    function detenerCronometro() {
-        if(cronometroIntervalo) clearInterval(cronometroIntervalo);
-        cronometroContainer.style.display = 'none';
-    }
+            function detenerCronometro() {
+                if(cronometroIntervalo) clearInterval(cronometroIntervalo);
+                cronometroContainer.style.display = 'none';
+            }
 
-    function fmtTime(s) {
-        return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
-    }
+            function fmtTime(s) {
+                return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+            }
 
-    // Init
-    cargarDatosIniciales();
-});
+            // Init
+            cargarDatosIniciales();
+        });

@@ -1,6 +1,19 @@
 <?php
-// LÓGICA DE SESIÓN (Intacta)
+// 1. LÓGICA DE SESIÓN
 $session_id = uniqid('reserva_', true);
+
+// 2. DETECTAR EL TIPO DE SERVICIO DESDE LA URL
+$tipo_url = isset($_GET['tipo']) ? $_GET['tipo'] : 'mantenimiento';
+
+if ($tipo_url === 'lavado') {
+    $tipo_servicio_db = 'Lavado'; 
+    $titulo_pagina = 'RESERVA DE LAVADO';
+    $breadcrumb = 'HOME / RESERVAS / LAVADO';
+} else {
+    $tipo_servicio_db = 'Mantenimiento'; 
+    $titulo_pagina = 'RESERVA DE MANTENIMIENTO';
+    $breadcrumb = 'HOME / RESERVAS / MANTENIMIENTO';
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -43,29 +56,48 @@ $session_id = uniqid('reserva_', true);
 
         /* MODAL CHECKMARK */
         .checkmark-circle { width: 80px; height: 80px; position: relative; display: inline-block; margin: 0 auto 20px auto; }
-        .checkmark-circle .background { width: 80px; height: 80px; border-radius: 50%; background: #198754; position: absolute; top: 0; left: 0; }
+        .checkmark-circle .background { width: 80px; height: 80px; border-radius: 50%; background: #4caf50; position: absolute; top: 0; left: 0; }
         .checkmark { border-radius: 5px; }
         .checkmark:after { position: absolute; display: block; content: ""; left: 30px; top: 16px; width: 20px; height: 40px; border: solid white; border-width: 0 6px 6px 0; transform: rotate(45deg); }
 
         footer { background-color: #212529; color: white; text-align: center; padding: 30px 0; margin-top: 80px; font-size: 0.9rem; }
+
+        /* --- NUEVO: OVERLAY DE CARGA --- */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: 9999;
+            display: none; /* Oculto por defecto */
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        .loading-content {
+            background: white; padding: 30px; border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center;
+        }
     </style>
 </head>
 
-<body data-tipo-servicio="Mantenimiento">
+<body data-tipo-servicio="<?php echo $tipo_servicio_db; ?>">
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container"><a class="navbar-brand fw-bold" href="#" style="color: #d4af37;">Lubricentro La Cusqueña</a></div>
     </nav>
 
     <div class="aviso-container">
-        <p class="mb-2">Estimados clientes, nuestro horario de atención es de:</p>
-        <span class="horario-highlight">Lunes a Sábados: 8:00 a.m. a 6:00 p.m.</span>
-        <span class="horario-highlight">Domingos: 8:00 a.m. a 1:00 p.m.</span>
-        <p class="aviso-text">Recuerda que contamos con un tiempo de tolerancia de 10 minutos.</p>
+        <div class="aviso-content" data-aos="fade-down">
+            <p class="aviso-text">Estimados clientes, nuestro horario de atención es de:</p>
+            <span class="horario-highlight">Lunes a Sábados: 8:00 a.m. a 6:00 p.m.</span>
+            <span class="horario-highlight">Domingos: 8:00 a.m. a 1:00 p.m.</span>
+            <p class="aviso-text mt-4 mb-0">Recuerda que contamos con un tiempo de tolerancia de 10 minutos.</p>
+        </div>
     </div>
 
-    <h1 class="main-title" data-aos="fade-up">RESERVAR CITA</h1>
-    <div class="breadcrumb-custom" data-aos="fade-up">HOME / RESERVAS</div>
+    <div class="encabezado" data-aos="fade-up">
+        <h1 class="main-title"><?php echo $titulo_pagina; ?></h1>
+        <div class="breadcrumb-custom">
+            <?php echo $breadcrumb; ?>
+        </div>
+    </div>
 
     <div class="container mb-5" style="max-width: 900px;">
 
@@ -89,7 +121,7 @@ $session_id = uniqid('reserva_', true);
         <div id="paso2-datos-cliente" style="display: none;">
             
             <div class="header-dark">Resumen de su cita</div>
-            <div class="card-clean" style="border-radius: 0 0 8px 8px; margin-top: -1px; border-top: 0; padding: 20px;">
+            <div class="card-clean" style="border-radius: 0 0 8px 8px; margin-top: -1px; background: #fff; padding: 20px; border-top: 0;">
                 <div class="row">
                     <div class="col-md-6">
                         <small class="text-muted">Día seleccionado</small>
@@ -102,7 +134,7 @@ $session_id = uniqid('reserva_', true);
                 </div>
             </div>
 
-            <div class="header-dark mt-4"><i class="fas fa-user me-2"></i> Complete sus datos</div>
+            <div class="header-dark mt-4"><i class="fas fa-user-edit me-2"></i> Complete sus datos</div>
             <div class="card-clean" style="border-radius: 0 0 8px 8px; margin-top: -1px; border-top: 0;">
                 
                 <form id="formConfirmarCita">
@@ -112,23 +144,33 @@ $session_id = uniqid('reserva_', true);
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Nombre completo</label>
-                            <input type="text" name="nombre_cliente" class="form-control" required placeholder="Nombre y Apellidos">
+                            <label class="form-label fw-bold">Nombres</label>
+                            <input type="text" name="nombre_cliente" class="form-control" required placeholder="Ej: Juan Carlos">
                         </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Apellidos</label>
+                            <input type="text" name="apellido_cliente" class="form-control" required placeholder="Ej: Pérez Lopez">
+                        </div>
+                    </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Teléfono</label>
-                            <input type="tel" name="telefono_cliente" class="form-control" required placeholder="999 999 999">
+                            <input type="tel" name="telefono_cliente" class="form-control" required placeholder="Ej: 987654321" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">DNI / RUC</label>
-                            <input type="text" name="dni_cliente" class="form-control" required placeholder="Ingrese su documento">
+                            <input type="text" name="dni_cliente" class="form-control" required placeholder="Ingrese su documento" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Correo electrónico</label>
-                            <input type="email" name="email_cliente" class="form-control" required placeholder="ejemplo@correo.com">
+                            <input type="email" name="email_cliente" id="txtCorreo" class="form-control" required placeholder="ejemplo@correo.com">
+                            <div class="form-text mt-1" style="color: #856404; font-size: 0.85rem;">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Asegúrese de colocar un correo electrónico válido y activo.
+                            </div>
+                            <div id="feedbackCorreo" class="invalid-feedback text-start"></div>
                         </div>
                     </div>
 
@@ -137,9 +179,7 @@ $session_id = uniqid('reserva_', true);
                         <select name="servicio_solicitado" class="form-select" required>
                             <option value="">Cargando servicios...</option>
                         </select>
-                        
-                        <div id="precio-estimado" class="alert alert-warning mt-2 p-2" style="display: none; font-size: 0.9rem; border-left: 4px solid #d4af37; background-color: #fff3cd; color: #856404;">
-                            </div>
+                        <div id="precio-estimado" class="alert alert-warning mt-2 p-2" style="display: none; font-size: 0.9rem; border-left: 4px solid #d4af37; background-color: #fff3cd; color: #856404;"></div>
                     </div>
 
                     <div class="text-center">
@@ -161,6 +201,14 @@ $session_id = uniqid('reserva_', true);
                 <p>Tu servicio fue registrado correctamente.</p>
                 <button type="button" class="btn btn-dark mt-3 w-100" onclick="location.reload()">Aceptar</button>
             </div>
+        </div>
+    </div>
+
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+            <h5 class="fw-bold">Procesando su reserva...</h5>
+            <p class="text-muted mb-0">Por favor, espere un momento.</p>
         </div>
     </div>
 

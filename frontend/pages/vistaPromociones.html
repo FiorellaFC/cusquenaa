@@ -18,77 +18,105 @@
     <style>
         /* Hero Promociones */
         #hero-promos {
-            background: url('../css/imagenes/img2.jpg') center center/cover no-repeat fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+                url('../css/imagenes/img2.jpg') center center/cover no-repeat;
             height: 70vh;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
             text-align: center;
-            position: relative;
-        }
-
-        #hero-promos::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.55);
-        }
-
-        #hero-promos .content {
-            position: relative;
-            z-index: 1;
         }
 
         #hero-promos h1 {
-            font-size: 3.2rem;
-            font-weight: 800;
-            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.7);
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 4px 4px 12px rgba(0, 0, 0, 0.7);
         }
 
         #hero-promos p {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+
+        /* Título sección */
+        section h2 {
+            font-weight: 800;
+            font-size: 2.4rem;
+            color: #343a40;
+            position: relative;
+        }
+
+        section h2::after {
+            content: "";
+            width: 80px;
+            height: 4px;
+            background: #dc3545;
+            display: block;
+            margin: 10px auto 0;
+            border-radius: 5px;
         }
 
         /* Cards Promos */
         .promo-card {
             border: none;
-            border-radius: 15px;
+            border-radius: 18px;
             overflow: hidden;
-            transition: all 0.4s ease-in-out;
+            padding: 35px 20px;
             background: white;
+            transition: all 0.4s ease-in-out;
+            position: relative;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
         }
 
         .promo-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.25);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.25);
         }
 
+        .promo-card i {
+            color: #dc3545 !important;
+            transition: 0.3s;
+        }
+
+        .promo-card:hover i {
+            transform: scale(1.2);
+        }
+
+        /* Badge */
         .promo-badge {
             background: #dc3545;
             color: white;
             font-weight: bold;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 7px 15px;
+            border-radius: 50px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Precio */
+        .promo-price {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #28a745;
+            margin-top: 10px;
         }
 
         /* Footer */
         footer {
-            background-color: #212529;
+            background-color: #111;
             padding: 40px 0;
             text-align: center;
             color: white;
         }
 
-        footer a {
-            color: #f8f9fa;
-            margin: 0 10px;
-            font-size: 1.3rem;
-        }
-
-        footer a:hover {
-            color: #ffc107;
+        footer p {
+            opacity: 0.8;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -124,51 +152,45 @@
     </section>
 
     <!-- Promociones -->
+    <!-- Promociones dinámicas -->
     <section class="py-5">
         <div class="container">
             <h2 class="text-center mb-5" data-aos="fade-up">Ofertas del Mes</h2>
-
-            <div class="row g-4">
-
-                <!-- Promo 1 -->
-                <div class="col-md-4" data-aos="fade-right">
-                    <div class="promo-card p-4 text-center shadow">
-                        <span class="promo-badge">-20%</span>
-                        <i class="fas fa-oil-can fa-3x my-3 text-primary"></i>
-                        <h5 class="fw-bold">Cambio de Aceite Premium</h5>
-                        <p>Incluye filtro y revisión rápida del motor.</p>
-                        <p class="fw-bold text-success fs-4">S/ 80</p>
-                       
-                    </div>
+            <div class="row g-4" id="promocionesContainer">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-danger" style="width:3rem;height:3rem;"></div>
                 </div>
-
-                <!-- Promo 2 -->
-                <div class="col-md-4" data-aos="fade-up">
-                    <div class="promo-card p-4 text-center shadow">
-                        <span class="promo-badge">Combo Especial</span>
-                        <i class="fas fa-car-side fa-3x my-3 text-primary"></i>
-                        <h5 class="fw-bold">Lavado + Aspirado + Brillo</h5>
-                        <p>Deja tu auto impecable por dentro y por fuera.</p>
-                        <p class="fw-bold text-success fs-4">S/ 35</p>
-                      
-                    </div>
-                </div>
-
-                <!-- Promo 3 -->
-                <div class="col-md-4" data-aos="fade-left">
-                    <div class="promo-card p-4 text-center shadow">
-                        <span class="promo-badge">-15%</span>
-                        <i class="fas fa-tools fa-3x my-3 text-primary"></i>
-                        <h5 class="fw-bold">Mantenimiento Preventivo</h5>
-                        <p>Cambia filtros + revisión de frenos y suspensión.</p>
-                        <p class="fw-bold text-success fs-4">S/ 110</p>
-                        
-                    </div>
-                </div>
-
             </div>
         </div>
     </section>
+
+    <script>
+        fetch('../../backend/api/controllers/vista_promociones/getPromociones.php')
+            .then(r => r.json())
+            .then(promos => {
+                const cont = document.getElementById('promocionesContainer');
+                if (promos.length === 0) {
+                    cont.innerHTML = '<div class="col-12 text-center py-5"><h4 class="text-muted">No hay promociones activas en este momento</h4></div>';
+                    return;
+                }
+                cont.innerHTML = promos.map(p => `
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="promo-card p-4 text-center shadow">
+                    ${p.badge ? `<span class="promo-badge">${p.badge}</span>` : ''}
+                    <i class="fas ${p.icono} fa-3x my-3 text-primary"></i>
+                    <h5 class="fw-bold">${p.titulo}</h5>
+                    <p>${p.descripcion}</p>
+                    <p class="fw-bold text-success fs-4">S/ ${parseFloat(p.precio).toFixed(2)}</p>
+                </div>
+            </div>
+        `).join('');
+                AOS.refresh();
+            })
+            .catch(() => {
+                document.getElementById('promocionesContainer').innerHTML =
+                    '<div class="col-12 text-center text-danger">Error al cargar promociones</div>';
+            });
+    </script>
 
     <!-- Footer -->
     <footer>
@@ -186,4 +208,5 @@
     </script>
 
 </body>
+
 </html>
