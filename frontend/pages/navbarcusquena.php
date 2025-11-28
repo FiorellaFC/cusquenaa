@@ -42,10 +42,10 @@
         
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link" href="index.php">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="vistaServicios.html">Servicios</a></li>
-                <li class="nav-item"><a class="nav-link" href="vistaPromociones.html">Promociones</a></li>
-                <li class="nav-item"><a class="nav-link" href="vistaContacto.html">Contacto</a></li>
+                <li class="nav-item"><a class="nav-link" href="vistaCusquena.php">Inicio</a></li>
+                <li class="nav-item"><a class="nav-link" href="vistaServicios.php">Servicios</a></li>
+                <li class="nav-item"><a class="nav-link" href="vistaPromociones.php">Promociones</a></li>
+                <li class="nav-item"><a class="nav-link" href="vistaContacto.php">Contacto</a></li>
 
                 <?php if (isset($_SESSION['cliente_id'])): ?>
                     <li class="nav-item dropdown ms-lg-3">

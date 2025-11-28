@@ -1,3 +1,7 @@
+<?php
+// Iniciar sesión para el navbar
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -6,26 +10,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Promociones - Lubricentro La Cusqueña</title>
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- FontAwesome -->
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 
-    <!-- AOS Animaciones -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
+        /* Ajuste Navbar Fijo */
+        body { padding-top: 70px; font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
+
         /* Hero Promociones */
         #hero-promos {
             background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
                 url('../css/imagenes/img2.jpg') center center/cover no-repeat;
-            height: 70vh;
+            height: 60vh; /* Ajustado para que no sea tan alto */
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
             text-align: center;
+            border-radius: 0 0 50px 50px;
+            margin-bottom: 40px;
         }
 
         #hero-promos h1 {
@@ -68,6 +74,7 @@
             transition: all 0.4s ease-in-out;
             position: relative;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            height: 100%; /* Para que todas tengan la misma altura */
         }
 
         .promo-card:hover {
@@ -98,52 +105,27 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Precio */
-        .promo-price {
-            font-size: 2rem;
-            font-weight: 900;
-            color: #28a745;
-            margin-top: 10px;
-        }
-
         /* Footer */
         footer {
             background-color: #111;
             padding: 40px 0;
             text-align: center;
             color: white;
+            margin-top: 50px;
         }
 
         footer p {
             opacity: 0.8;
             letter-spacing: 1px;
+            margin: 0;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="vistaCusquena.html">Lubricentro La Cusqueña</a>
+    <?php include 'navbarcusquena.php'; ?>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="vistaCusquena.html">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="vistaServicios.html">Servicios</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="vistaPromociones.html">Promociones</a></li>
-                    <li class="nav-item"><a class="nav-link" href="vistaContacto.html">Contacto</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Promociones -->
     <section id="hero-promos">
         <div class="content" data-aos="zoom-in">
             <h1>Promociones Especiales</h1>
@@ -151,53 +133,61 @@
         </div>
     </section>
 
-    <!-- Promociones -->
-    <!-- Promociones dinámicas -->
     <section class="py-5">
         <div class="container">
             <h2 class="text-center mb-5" data-aos="fade-up">Ofertas del Mes</h2>
             <div class="row g-4" id="promocionesContainer">
                 <div class="col-12 text-center py-5">
                     <div class="spinner-border text-danger" style="width:3rem;height:3rem;"></div>
+                    <p class="mt-3 text-muted">Cargando ofertas...</p>
                 </div>
             </div>
         </div>
     </section>
 
     <script>
+        // Cargar promociones desde el backend
+        // Ajusta la ruta si es necesario, usé ../.. asumiendo que estás en frontend/pages
         fetch('../../backend/api/controllers/vista_promociones/getPromociones.php')
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) throw new Error("Error de red");
+                return r.json();
+            })
             .then(promos => {
                 const cont = document.getElementById('promocionesContainer');
-                if (promos.length === 0) {
+                
+                if (!Array.isArray(promos) || promos.length === 0) {
                     cont.innerHTML = '<div class="col-12 text-center py-5"><h4 class="text-muted">No hay promociones activas en este momento</h4></div>';
                     return;
                 }
+                
                 cont.innerHTML = promos.map(p => `
-            <div class="col-md-4" data-aos="fade-up">
-                <div class="promo-card p-4 text-center shadow">
-                    ${p.badge ? `<span class="promo-badge">${p.badge}</span>` : ''}
-                    <i class="fas ${p.icono} fa-3x my-3 text-primary"></i>
-                    <h5 class="fw-bold">${p.titulo}</h5>
-                    <p>${p.descripcion}</p>
-                    <p class="fw-bold text-success fs-4">S/ ${parseFloat(p.precio).toFixed(2)}</p>
-                </div>
-            </div>
-        `).join('');
-                AOS.refresh();
+                    <div class="col-md-4" data-aos="fade-up">
+                        <div class="promo-card p-4 text-center shadow">
+                            ${p.badge ? `<span class="promo-badge">${p.badge}</span>` : ''}
+                            <i class="fas ${p.icono} fa-3x my-3 text-primary"></i>
+                            <h5 class="fw-bold">${p.titulo}</h5>
+                            <p>${p.descripcion}</p>
+                            <p class="fw-bold text-success fs-4">S/ ${parseFloat(p.precio).toFixed(2)}</p>
+                            <a href="gestionCitas.php?tipo=mantenimiento" class="btn btn-outline-danger btn-sm rounded-pill mt-2">Reservar Ahora</a>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Refrescar animaciones AOS para los nuevos elementos
+                if(typeof AOS !== 'undefined') AOS.refresh();
             })
-            .catch(() => {
+            .catch((err) => {
+                console.error(err);
                 document.getElementById('promocionesContainer').innerHTML =
-                    '<div class="col-12 text-center text-danger">Error al cargar promociones</div>';
+                    '<div class="col-12 text-center text-danger"><i class="fas fa-exclamation-circle fa-2x mb-3"></i><br>No se pudieron cargar las promociones.</div>';
             });
     </script>
 
-    <!-- Footer -->
     <footer>
         <p>© 2025 Lubricentro La Cusqueña — Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
@@ -208,5 +198,4 @@
     </script>
 
 </body>
-
 </html>

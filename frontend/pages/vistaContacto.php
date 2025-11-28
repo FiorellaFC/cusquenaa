@@ -1,225 +1,285 @@
 <?php
-// contacto_interno.php
+// Iniciar sesión para el navbar
+session_start();
 ?>
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mensajes de Contacto</title>
 
-    <!-- ESTILOS -->
-    <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="stylesheet" href="../css/sidebar.css">
-    <link rel="stylesheet" href="../css/navbar.css">
-    <link href="../css/bootstrap.css" rel="stylesheet" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - Lubricentro La Cusqueña</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
     <style>
-        body { background: #eef1f5; }
-        .card { border-radius: 15px; border: none; }
-        .table-container {
-            max-height: 600px;
-            overflow-y: auto;
-            overflow-x: hidden;
+        /* Ajuste para Navbar Fijo */
+        body {
+            padding-top: 70px;
+            font-family: "Poppins", sans-serif;
+            background: #f5f7fa;
         }
-        .table-container thead th {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: #212529;
-            color: #fff;
-        }
-        .td-mensaje {
-            max-width: 350px;
-            min-width: 200px;
-            vertical-align: middle;
-        }
-        .badge-mensaje {
-            display: inline-block;
-            background: #0d6efd;
+
+        /* HERO */
+        #hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+                        url('../css/imagenes/img1.jpg') center center/cover no-repeat fixed;
+            height: 45vh;
+            position: relative;
             color: white;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 0.92rem;
-            line-height: 1.5;
-            max-width: 100%;
-            overflow-wrap: break-word;
-            word-break: break-word;
-            white-space: normal;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 0 0 50px 50px;
+            margin-bottom: 40px;
         }
-        @media (max-width: 768px) {
-            .td-mensaje { max-width: 250px; }
+
+        #hero h1 {
+            font-size: 3.3rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+            text-transform: uppercase;
         }
+
+        #hero p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        /* SECCIÓN: INFORMACIÓN */
+        .info-box {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+            transition: .3s;
+            height: 100%;
+            border: 1px solid #eee;
+        }
+
+        .info-box:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1);
+            border-color: #d4af37;
+        }
+
+        .info-box i {
+            font-size: 2.5rem;
+            color: #d4af37; /* Dorado */
+            margin-bottom: 15px;
+        }
+
+        /* FORMULARIO */
+        form {
+            background: #fff;
+            border-radius: 18px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        form input, form textarea {
+            border-radius: 10px;
+            padding: 12px;
+            background-color: #fcfcfc;
+        }
+        
+        form input:focus, form textarea:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+        }
+
+        form button {
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 10px;
+            background-color: #000;
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            transition: 0.3s;
+        }
+        
+        form button:hover {
+            background-color: #d4af37;
+            color: #000;
+            border-color: #d4af37;
+        }
+
+        /* MAPA */
+        .map-container {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        /* FOOTER */
+        footer {
+            background: #1f1f1f;
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+        footer p { margin: 0; opacity: 0.8; }
     </style>
 </head>
 
-<body class="sb-nav-fixed">
+<body>
 
-<!-- NAVBAR -->
-<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand ps-3" href="base.php">La Cusqueña</a>
-    <button class="btn btn-link btn-sm me-4" id="sidebarToggle"><i class="fas fa-bars"></i></button>
-    <ul class="navbar-nav ms-auto me-3">
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown">
-                <i class="fas fa-user fa-fw"></i>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="../../index.html">Cerrar Sesión</a></li>
-            </ul>
-        </li>
-    </ul>
-</nav>
+    <?php include 'navbarcusquena.php'; ?>
 
-<div id="layoutSidenav">
-    <!-- SIDEBAR -->
-    <div id="layoutSidenav_nav">
-        <script>
-            fetch('sidebear_Admin.php')
-                .then(r => r.text())
-                .then(html => document.getElementById('layoutSidenav_nav').innerHTML = html)
-                .catch(e => console.error('Error cargando sidebar:', e));
-        </script>
-    </div>
+    <section id="hero" data-aos="fade-down">
+        <div class="content">
+            <h1>Contáctanos</h1>
+            <p>Estamos aquí para ayudarte con el cuidado de tu vehículo</p>
+        </div>
+    </section>
 
-    <!-- CONTENIDO -->
-    <div id="layoutSidenav_content">
-        <main class="container-xl my-4">
-            <div class="container-fluid px-4">
+    <section class="container py-5">
+        <h2 class="text-center mb-5 fw-bold text-uppercase" data-aos="fade-up">Información de Contacto</h2>
 
-                <h1 class="mb-4 text-center fw-bold">
-                    <i class="fas fa-envelope-open-text me-2"></i> Bandeja de Contacto
-                </h1>
+        <div class="row g-4">
 
-                <!-- FILTROS -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <label class="form-label">Nombre:</label>
-                        <input id="filtroNombre" type="text" class="form-control" placeholder="Buscar por nombre">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Correo:</label>
-                        <input id="filtroCorreo" type="text" class="form-control" placeholder="Buscar por correo">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Fecha:</label>
-                        <input id="filtroFecha" type="date" class="form-control">
-                    </div>
-                    <div class="col-12 d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-dark" onclick="cargarMensajes()">
-                            <i class="fas fa-search"></i> Buscar
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="limpiarFiltros()">
-                            <i class="fas fa-times"></i> Limpiar
-                        </button>
-                    </div>
+            <div class="col-md-4" data-aos="fade-right">
+                <div class="info-box">
+                    <i class="fas fa-phone"></i>
+                    <h5 class="mt-3 fw-bold">Teléfono</h5>
+                    <p class="text-muted">+51 1 7651393 – +51 1 4551880</p>
                 </div>
+            </div>
 
-                <!-- TABLA -->
-                <div class="card shadow-lg">
-                    <div class="card-body p-3">
-                        <div class="table-container">
-                            <table class="table table-striped table-hover text-center align-middle">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nombre Completo</th>
-                                        <th>Correo</th>
-                                        <th>Mensaje</th>
-                                        <th>Fecha</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tablaContacto">
-                                    <!-- JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="info-box">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h5 class="mt-3 fw-bold">Dirección</h5>
+                    <p class="text-muted">Pro. Castilla Lote 1, Predio Rural La Poncho<br>Lurín – Lima, Perú</p>
                 </div>
+            </div>
+
+            <div class="col-md-4" data-aos="fade-left">
+                <div class="info-box">
+                    <i class="fas fa-clock"></i>
+                    <h5 class="mt-3 fw-bold">Horarios</h5>
+                    <p class="text-muted">Lunes a Sábado: 8:00 a.m. – 6:00 p.m.<br>Domingos: 8:00 a.m. – 1:00 p.m.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="container pb-5">
+        <h2 class="text-center mb-4 fw-bold text-uppercase" data-aos="fade-up">Envíanos un Mensaje</h2>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8" data-aos="zoom-in">
+
+                <form id="formContacto">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre completo</label>
+                        <input type="text" id="nombre" class="form-control" required placeholder="Tu nombre">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Correo</label>
+                        <input type="email" id="correo" class="form-control" required placeholder="tucorreo@email.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mensaje</label>
+                        <textarea id="mensaje" class="form-control" rows="4" required placeholder="Escribe aquí tu consulta..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn w-100">ENVIAR MENSAJE</button>
+                </form>
 
             </div>
-        </main>
+        </div>
+    </section>
+
+    <section class="container pb-5">
+        <h2 class="text-center mb-4 fw-bold text-uppercase" data-aos="fade-up">Ubícanos</h2>
+
+        <div class="map-container ratio ratio-16x9" data-aos="zoom-in">
+            <iframe
+                src="https://maps.google.com/maps?q=Lurin,Lima&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </section>
+
+    <footer class="text-center">
+        <div class="container">
+            <p>© 2025 Lubricentro La Cusqueña — Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <div class="modal fade" id="modalSuccess" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-4">
+                <div style="font-size: 3rem; color: #198754; margin-bottom: 15px;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h4 class="fw-bold">¡Mensaje enviado!</h4>
+                <p class="text-muted">Gracias por escribirnos, te responderemos pronto.</p>
+                <button class="btn btn-dark mt-2" data-bs-dismiss="modal" style="border: 1px solid #d4af37;">Aceptar</button>
+            </div>
+        </div>
     </div>
-</div>
 
-<script src="../js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 1000, once: true });
+    </script>
 
-<script>
-// ==== FUNCIONES ====
-function limpiarFiltros() {
-    document.getElementById("filtroNombre").value = "";
-    document.getElementById("filtroCorreo").value = "";
-    document.getElementById("filtroFecha").value = "";
-    cargarMensajes();
-}
+    <script>
+        document.getElementById("formContacto").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            
+            // Efecto visual de carga en el botón
+            const btnSubmit = this.querySelector('button[type="submit"]');
+            const originalText = btnSubmit.innerText;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+            btnSubmit.disabled = true;
 
-// Formato bonito: 2025-11-27 → 27-11-2025
-function formatoFechaBonito(fecha) {
-    if (!fecha) return '';
-    const soloFecha = fecha.split(' ')[0];
-    const [y, m, d] = soloFecha.split('-');
-    return `${d}-${m}-${y}`;
-}
+            const payload = {
+                nombre_completo: document.getElementById("nombre").value,
+                correo: document.getElementById("correo").value,
+                mensaje: document.getElementById("mensaje").value
+            };
 
-async function cargarMensajes() {
-    const nombre = document.getElementById("filtroNombre").value.trim();
-    const correo = document.getElementById("filtroCorreo").value.trim();
-    const fecha  = document.getElementById("filtroFecha").value; // ← yyyy-mm-dd
+            try {
+                const response = await fetch("../../backend/api/controllers/vista_contacto/contacto.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
 
-    const params = new URLSearchParams();
-    if (nombre) params.append('nombre', nombre);
-    if (correo) params.append('correo', correo);
-    if (fecha)  params.append('fecha', fecha);   // ← ESTE ES EL FORMATO CORRECTO
+                const result = await response.json();
 
-    const url = `../../backend/api/controllers/vista_contacto/contactoInterno.php?${params.toString()}`;
+                if (result.message) {
+                    const successModal = new bootstrap.Modal(document.getElementById("modalSuccess"));
+                    successModal.show();
+                    this.reset();
+                } else {
+                    alert("Error: " + (result.error ?? "No se pudo enviar."));
+                }
 
-    // ¡¡ESTO ES CLAVE PARA DEBUG!!
-    console.log("URL enviada al backend →", url);
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        const data = await response.json();
-        let html = "";
-
-        if (!data || data.length === 0) {
-            html = `<tr><td colspan="5" class="text-muted py-5">No se encontraron mensajes con esos filtros</td></tr>`;
-        } else {
-            data.forEach(msg => {
-                const mensajeLimpio = msg.mensaje
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/\n/g, "<br>");
-
-                const fechaBonita = formatoFechaBonito(msg.fecha_envio);
-
-                html += `
-                <tr>
-                    <td><strong>${msg.id}</strong></td>
-                    <td>${msg.nombre_completo}</td>
-                    <td>${msg.correo}</td>
-                    <td class="td-mensaje"><span class="badge-mensaje">${mensajeLimpio}</span></td>
-                    <td><strong>${fechaBonita}</strong></td>
-                </tr>`;
-            });
-        }
-
-        document.getElementById("tablaContacto").innerHTML = html;
-
-    } catch (err) {
-        console.error("Error completo:", err);
-        document.getElementById("tablaContacto").innerHTML = 
-            `<tr><td colspan="5" class="text-danger py-4">Error de conexión o servidor</td></tr>`;
-    }
-}
-
-// Cargar al iniciar
-cargarMensajes();
-</script>
+            } catch (error) {
+                alert("Error al conectar con el servidor.");
+                console.log(error);
+            } finally {
+                // Restaurar botón
+                btnSubmit.innerText = originalText;
+                btnSubmit.disabled = false;
+            }
+        });
+    </script>
 
 </body>
 </html>

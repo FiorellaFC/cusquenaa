@@ -24,7 +24,6 @@ session_start();
             margin: 0;
             overflow-x: hidden;
         }
-
         /* Hero Section con efecto parallax */
         #hero {
             background: url('../css/imagenes/img1.jpg') center center / cover no-repeat fixed;
