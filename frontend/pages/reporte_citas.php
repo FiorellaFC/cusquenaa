@@ -51,7 +51,7 @@
                 <div class="container-fluid px-4">
 
                     <h1 class="text-center mb-5 fw-bold" style="font-size: 2.6rem;">
-                        Reporte de Citas Confirmadas
+                        Reporte de Citas Completadas
                     </h1>
 
                     <!-- ESTADÍSTICAS -->
@@ -59,7 +59,7 @@
                         <div class="col-md-4">
                             <div class="stats-card bg-primary">
                                 <h2 id="totalCitas">0</h2>
-                                <p>Total Confirmadas</p>
+                                <p>Total Completadas</p>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -132,105 +132,8 @@
     </div>
 
     <script src="../js/bootstrap.bundle.min.js"></script>
-    <script>
-        const API = '../../backend/api/controllers/reporte_citas.php';
+    
+    <script src="../js/functions/reporte_citas.js"></script>
 
-        async function cargarReporte() {
-            const inicio = document.getElementById('fechaInicio').value || '2020-01-01';
-            const fin = document.getElementById('fechaFin').value || new Date().toISOString().split('T')[0];
-
-            try {
-                const res = await fetch(`${API}?inicio=${inicio}&fin=${fin}`);
-                if (!res.ok) throw new Error(`Error ${res.status}`);
-                const data = await res.json();
-
-                document.getElementById('totalCitas').textContent = data.total || 0;
-                document.getElementById('servicioTop').textContent = data.servicio_top || 'N/A';
-                document.getElementById('clienteTop').textContent = data.cliente_top || 'N/A';
-
-                const tbody = document.getElementById('tablaCitas');
-                if (!data.citas || data.citas.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">No hay citas confirmadas</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = data.citas.map(c => `
-                    <tr>
-                        <td><strong>${c.fecha}</strong></td>
-                        <td>${c.nombre_completo.trim()}</td>
-                        <td>${c.telefono_cliente || '-'}</td>
-                        <td><span class="badge bg-primary">${c.servicio_nombre}</span></td>
-                        <td>${c.hora.substring(0,5)}</td>
-                        <td><span class="badge bg-success">Confirmada</span></td>
-                    </tr>
-                `).join('');
-
-            } catch (err) {
-                console.error("Error:", err);
-                document.getElementById('tablaCitas').innerHTML = 
-                    `<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar datos</td></tr>`;
-            }
-        }
-
-        function exportarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            const hoy = new Date().toLocaleDateString('es-PE');
-
-            doc.setFontSize(20);
-            doc.text('REPORTE DE CITAS CONFIRMADAS - LA CUSQUEÑA', 148, 22, { align: 'center' });
-            doc.setFontSize(11);
-            doc.text(`Generado el: ${hoy}`, 20, 35);
-
-            const filas = Array.from(document.querySelectorAll('#tablaCitas tr')).map(tr =>
-                Array.from(tr.cells).map(td => td.innerText)
-            );
-
-            doc.autoTable({
-                head: [['Fecha', 'Cliente', 'Teléfono', 'Servicio', 'Hora', 'Estado']],
-                body: filas.length > 0 ? filas : [['No hay datos']],
-                startY: 45,
-                theme: 'grid',
-                headStyles: { fillColor: [220, 53, 69] }
-            });
-
-            doc.save(`Reporte_Citas_${hoy.replace(/\//g, '-')}.pdf`);
-        }
-
-        // NUEVA FUNCIÓN EXCEL
-        function exportarExcel() {
-            const filas = Array.from(document.querySelectorAll('#tablaCitas tr')).map(tr =>
-                Array.from(tr.cells).map(td => td.innerText)
-            );
-
-            // Si no hay datos, ponemos una fila vacía
-            const datosParaExcel = filas.length > 0 ? filas : [["Sin datos","","","","",""]];
-
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet([
-                ["REPORTE DE CITAS - LA CUSQUEÑA"],
-                [`Generado el: ${new Date().toLocaleDateString('es-PE')}`],
-                [`Total de citas: ${document.getElementById('totalCitas').textContent}`],
-                [], // línea vacía
-                ["Fecha", "Cliente", "Teléfono", "Servicio", "Hora", "Estado"],
-                ...datosParaExcel
-            ]);
-
-            // Ajustar ancho de columnas
-            ws['!cols'] = [{wch:15}, {wch:30}, {wch:15}, {wch:25}, {wch:10}, {wch:15}];
-
-            XLSX.utils.book_append_sheet(wb, ws, "Citas");
-            XLSX.writeFile(wb, `Reporte_LaCusquena_${new Date().toISOString().slice(0,10)}.xlsx`);
-        }
-
-        // Cargar al iniciar
-        window.addEventListener('DOMContentLoaded', () => {
-            const hoy = new Date().toISOString().split('T')[0];
-            const hace30 = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0];
-            document.getElementById('fechaInicio').value = hace30;
-            document.getElementById('fechaFin').value = hoy;
-            cargarReporte();
-        });
-    </script>
 </body>
 </html>
