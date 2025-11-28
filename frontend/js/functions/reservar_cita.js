@@ -225,18 +225,30 @@ function hideLoading() {
 
                     if (result.success) {
                         detenerCronometro();
+                        
+                        // 1. OBTENER EL CORREO QUE SE USÓ (Sea del input hidden o visible)
+                        const emailUsado = document.querySelector('[name="email_cliente"]').value;
+
+                        // 2. ACTUALIZAR EL MENSAJE DEL MODAL CON EL CORREO                 
+                        const modalBody = document.querySelector('#confirmModal .modal-content p');
+                        if(modalBody) {
+                            modalBody.innerHTML = `
+                                Tu servicio fue registrado correctamente.<br>
+                                <span class="text-muted small">Se ha enviado un enlace de confirmación a:</span><br>
+                                <strong class="text-danger">${emailUsado}</strong>
+                            `;
+                        }
+
                         const modalEl = document.getElementById('confirmModal');
                         const modal = new bootstrap.Modal(modalEl);
                         modal.show();
                     } else {
-                        // MANEJO DE ERRORES ESPECÍFICO
+                        // MANEJO DE ERRORES ESPECÍFICO (IGUAL QUE ANTES)
                         if (result.tipo_error === 'email' && inputCorreo) {
-                            // Error sutil en el formulario (Estilo Google)
-                            inputCorreo.classList.add('is-invalid'); // Pone el borde rojo
-                            if(feedbackCorreo) feedbackCorreo.textContent = result.error; // Pone el texto rojo
+                            inputCorreo.classList.add('is-invalid');
+                            if(feedbackCorreo) feedbackCorreo.textContent = result.error;
                             inputCorreo.focus();
                         } else {
-                            // Error general del sistema (Alerta)
                             alert("Aviso: " + (result.error || "Ocurrió un error inesperado."));
                         }
                     }

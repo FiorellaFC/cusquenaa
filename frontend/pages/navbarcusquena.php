@@ -1,3 +1,5 @@
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
     /* Navbar Transparente/Oscuro */
     .navbar-custom {
@@ -54,8 +56,8 @@
                             <?php echo htmlspecialchars($_SESSION['cliente_nombre']); ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
-                            <li><a class="dropdown-item" href="#">Mi Perfil</a></li>
-                            <li><a class="dropdown-item" href="#">Mis Citas</a></li>
+                            <li><a class="dropdown-item" href="perfil_cliente.php">Mi Perfil</a></li>
+                            <li><a class="dropdown-item" href="mis_citas.php">Mis Citas</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" id="btn-logout">Cerrar Sesión</a></li>
                         </ul>
@@ -142,3 +144,135 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Configuración base de SweetAlert
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
+    // Ruta Base API
+    const BASE_API = '../../backend/api/controllers/loginclientes/';
+
+    // --- LÓGICA DE REGISTRO ---
+    const formRegistro = document.getElementById('formRegistro');
+    if (formRegistro) {
+        formRegistro.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = formRegistro.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+            btn.disabled = true;
+
+            const formData = new FormData(formRegistro);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const res = await fetch(BASE_API + 'registro.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    // ÉXITO: Modal SweetAlert
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Registro Exitoso!',
+                        text: result.message,
+                        confirmButtonColor: '#d4af37'
+                    });
+                    formRegistro.reset();
+                    const modalEl = document.getElementById('authModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                } else {
+                    // ERROR: Toast
+                    Toast.fire({ icon: 'error', title: result.error });
+                }
+            } catch (err) {
+                console.error(err);
+                Toast.fire({ icon: 'error', title: 'Error de conexión' });
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // --- LÓGICA DE LOGIN ---
+    const formLogin = document.getElementById('formLogin');
+    if (formLogin) {
+        formLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = formLogin.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btn.disabled = true;
+
+            const formData = new FormData(formLogin);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const res = await fetch(BASE_API + 'login.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    location.reload(); // Recargar para ver el usuario logueado
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Acceso',
+                        text: result.error,
+                        confirmButtonColor: '#d4af37'
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                Toast.fire({ icon: 'error', title: 'Error de conexión' });
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // --- LÓGICA DE LOGOUT ---
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', (e) => {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: "¿Estás seguro que deseas salir?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d4af37',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'Sí, salir'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = BASE_API + 'logout.php';
+                }
+            })
+        });
+    }
+});
+</script>

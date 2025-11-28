@@ -115,7 +115,7 @@ frontend/pages/vistaCusquena.html
         <div class="content" data-aos="zoom-in" data-aos-delay="100">
             <h1>Lubricentro La Cusqueña</h1>
             <p>Calidad, confianza y rapidez para el cuidado de tu vehículo</p>
-            <a href="vistaServicios.html" class="btn-hero">Ver Servicios</a>
+            <a href="vistaServicios.php" class="btn-hero">Ver Servicios</a>
         </div>
     </section>
 
