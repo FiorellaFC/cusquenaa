@@ -45,61 +45,96 @@ if ($method === 'GET') {
         exit;
     }
 
-    // 2. Obtener Horarios
+    // --- 2. LÓGICA DE HORARIOS (Rango de 2 semanas) ---
     try {
         $hoy = new DateTime();
         $fecha_actual_str = $hoy->format('Y-m-d');
         $hora_actual_str = $hoy->format('H:i:s');
-        $dia_semana = $hoy->format('N');
-        
-        $lunes = clone $hoy;
-        $lunes->modify('-' . ($dia_semana - 1) . ' days');
-        
-        $fechas_semana = [];
-        for ($i = 0; $i < 6; $i++) { $fechas_semana[] = (clone $lunes)->modify("+$i days")->format('Y-m-d'); }
 
+        // Generamos un rango de 14 días (2 semanas)
+        $fechas_disponibles = [];
+        $dias_a_mostrar = 14; 
+
+        for ($i = 0; $i < $dias_a_mostrar; $i++) {
+            $fecha_iteracion = (clone $hoy)->modify("+$i days");
+            
+            // Si quieres excluir domingos totalmente, descomenta esto:
+            // if ($fecha_iteracion->format('N') == 7) continue; 
+
+            // Si trabajas domingos medio día, lo dejamos pasar
+            $fechas_disponibles[] = $fecha_iteracion->format('Y-m-d');
+        }
+
+        $fecha_inicio = $fechas_disponibles[0];
+        $fecha_fin = end($fechas_disponibles);
+
+        // Consultar Citas en este rango amplio
         $stmt_citas = $conn->prepare("SELECT fecha, hora FROM citas WHERE fecha BETWEEN :i AND :f AND estado IN ('confirmada', 'pendiente')");
-        $stmt_citas->execute(['i' => $fechas_semana[0], 'f' => $fechas_semana[5]]);
+        $stmt_citas->execute(['i' => $fecha_inicio, 'f' => $fecha_fin]);
         $citas_ocupadas = [];
         foreach($stmt_citas->fetchAll(PDO::FETCH_ASSOC) as $c) $citas_ocupadas[$c['fecha']][] = $c['hora'];
 
+        // Consultar Bloqueos en este rango
         $stmt_bloq = $conn->prepare("SELECT fecha, hora FROM horarios_bloqueados WHERE fecha BETWEEN :i AND :f");
-        $stmt_bloq->execute(['i' => $fechas_semana[0], 'f' => $fechas_semana[5]]);
+        $stmt_bloq->execute(['i' => $fecha_inicio, 'f' => $fecha_fin]);
         $horarios_bloqueados = [];
         foreach($stmt_bloq->fetchAll(PDO::FETCH_ASSOC) as $b) $horarios_bloqueados[$b['fecha']][] = $b['hora'];
 
         $respuesta = [];
-        $nombres_dias = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        $nombres_dias = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
-        foreach ($fechas_semana as $fecha_str) {
+        // Iteramos sobre las fechas calculadas
+        foreach ($fechas_disponibles as $fecha_str) {
             $fecha_obj = new DateTime($fecha_str);
+            $dia_num = $fecha_obj->format('N'); // 1=Lunes, 7=Domingo
+            
             $horarios_del_dia = [];
-            $inicio = new DateTime($fecha_str.' '.$HORA_INICIO);
-            $fin = new DateTime($fecha_str.' '.$HORA_FIN);
-            $periodo = new DatePeriod($inicio, new DateInterval('PT'.$INTERVALO_MINUTOS.'M'), $fin);
+            
+            // Definir horario según el día
+            $hora_inicio_dia = $HORA_INICIO;
+            $hora_fin_dia = $HORA_FIN;
+
+            // Si es Domingo, cerramos a la 1:00 PM (13:00)
+            if ($dia_num == 7) {
+                $hora_fin_dia = '13:00';
+            }
+
+            $inicio = new DateTime($fecha_str.' '.$hora_inicio_dia);
+            $fin = new DateTime($fecha_str.' '.$hora_fin_dia);
+            $intervalo = new DateInterval('PT'.$INTERVALO_MINUTOS.'M');
+            $periodo = new DatePeriod($inicio, $intervalo, $fin);
 
             foreach ($periodo as $dt) {
                 $hora = $dt->format('H:i:s');
                 $hora_corta = $dt->format('H:i');
                 $estado = 'disponible';
 
+                // Validar pasado
                 if ($fecha_str < $fecha_actual_str || ($fecha_str === $fecha_actual_str && $hora < $hora_actual_str)) {
                     $estado = 'bloqueado'; 
-                } elseif (isset($citas_ocupadas[$fecha_str]) && in_array($hora, $citas_ocupadas[$fecha_str])) {
+                } 
+                // Validar ocupado
+                elseif (isset($citas_ocupadas[$fecha_str]) && in_array($hora, $citas_ocupadas[$fecha_str])) {
                     $estado = 'ocupado';
-                } elseif (isset($horarios_bloqueados[$fecha_str]) && in_array($hora, $horarios_bloqueados[$fecha_str])) {
+                } 
+                // Validar bloqueado temporalmente
+                elseif (isset($horarios_bloqueados[$fecha_str]) && in_array($hora, $horarios_bloqueados[$fecha_str])) {
                     $estado = 'bloqueado';
                 }
+                
                 $horarios_del_dia[] = ['hora' => $hora_corta, 'estado' => $estado];
             }
+            
             $respuesta[] = [
-                'dia_nombre' => $nombres_dias[$fecha_obj->format('N')],
+                'dia_nombre' => $nombres_dias[$dia_num],
                 'fecha_completa' => $fecha_obj->format('d/m/Y'),
                 'fecha_iso' => $fecha_str,
                 'horarios' => $horarios_del_dia
             ];
         }
+        
         echo json_encode($respuesta);
+
     } catch (Exception $e) { echo json_encode(['error' => $e->getMessage()]); }
 }
 
