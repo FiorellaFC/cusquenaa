@@ -34,7 +34,7 @@
             </a>
 
             <!-- Reportes -->
-            <a class="nav-link" href="reportes.php">
+            <a class="nav-link" href="reporte_citas.php">
                 <div class="sb-nav-link-icon"><i class="fas fa-file-chart-line"></i></div>
                 Reportes
             </a>
