@@ -1,19 +1,12 @@
-// frontend/js/functions/reporte_citas.js
-
 const API_REPORTE = '../../backend/api/controllers/reporte_citas.php';
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- CÁLCULO DE FECHAS (MES ACTUAL) ---
     const date = new Date();
     const year = date.getFullYear();
-    // getMonth() devuelve 0-11, sumamos 1 y aseguramos 2 dígitos
     const month = String(date.getMonth() + 1).padStart(2, '0'); 
     
-    // Primer día del mes: siempre 01
     const primerDiaMes = `${year}-${month}-01`;
-
-    // Último día del mes: truco usando el día 0 del mes siguiente
     const ultimoDiaDate = new Date(year, date.getMonth() + 1, 0);
     const ultimoDiaMes = `${year}-${month}-${ultimoDiaDate.getDate()}`;
 
@@ -21,8 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputFin = document.getElementById('fechaFin');
 
     if(inputInicio && inputFin) {
-        inputInicio.value = primerDiaMes; // Ej: 2025-11-01
-        inputFin.value = ultimoDiaMes;    // Ej: 2025-11-30
+        inputInicio.value = primerDiaMes;
+        inputFin.value = ultimoDiaMes;
         cargarReporte(); 
     }
 });
@@ -38,13 +31,18 @@ async function cargarReporte() {
 
         // Actualizar Tarjetas
         document.getElementById('totalCitas').textContent = data.total || 0;
+        
+        // Si tienes un elemento para ganancia, úsalo
+        const elGanancia = document.getElementById('totalGanancia');
+        if(elGanancia) elGanancia.textContent = "S/. " + (data.ganancia_total || "0.00");
+
         document.getElementById('servicioTop').textContent = data.servicio_top || 'N/A';
         document.getElementById('clienteTop').textContent = data.cliente_top || 'N/A';
 
         // Actualizar Tabla
         const tbody = document.getElementById('tablaCitas');
         if (!data.citas || data.citas.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">No se encontraron citas completadas en este rango.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No hay citas completadas en este rango.</td></tr>`;
             return;
         }
 
@@ -53,8 +51,9 @@ async function cargarReporte() {
                 <td><strong>${c.fecha}</strong></td>
                 <td>${c.nombre_completo}</td>
                 <td>${c.telefono_cliente || '-'}</td>
-                <td><span class="badge bg-primary">${c.servicio_nombre}</span></td>
+                <td class="text-start small">${c.servicio_nombre || 'Sin servicios'}</td>
                 <td>${c.hora.substring(0,5)}</td>
+                <td class="fw-bold text-success">S/. ${parseFloat(c.precio_total).toFixed(2)}</td>
                 <td><span class="badge bg-info text-dark">Completada</span></td>
             </tr>
         `).join('');
@@ -62,10 +61,9 @@ async function cargarReporte() {
     } catch (err) {
         console.error("Error cargando reporte:", err);
         document.getElementById('tablaCitas').innerHTML = 
-            `<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar datos. Verifica la consola.</td></tr>`;
+            `<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar datos.</td></tr>`;
     }
 }
-
 // Función Exportar PDF
 function exportarPDF() {
     const { jsPDF } = window.jspdf;

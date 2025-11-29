@@ -194,31 +194,32 @@ function hideLoading() {
         });
     }
 
-        // 5. CONFIRMAR CITA (VERSIÓN CORREGIDA PARA VALIDACIÓN VISUAL)
-            formConfirmarCita.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!horarioSeleccionado) return alert("Selecciona un horario.");
+      // 5. CONFIRMAR CITA (ACTUALIZADO PARA MÚLTIPLES SERVICIOS)
+    formConfirmarCita.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!horarioSeleccionado) return alert("Selecciona un horario.");
 
-                // Limpiar errores visuales previos
-                const inputCorreo = document.getElementById('txtCorreo'); // Asegúrate que tu input tenga este ID
-                const feedbackCorreo = document.getElementById('feedbackCorreo');
-                if(inputCorreo) {
-                    inputCorreo.classList.remove('is-invalid');
-                    if(feedbackCorreo) feedbackCorreo.textContent = '';
-                }
+        // CAPTURAR SERVICIOS SELECCIONADOS
+        const checkboxes = document.querySelectorAll('.servicio-checkbox:checked');
+        if (checkboxes.length === 0) {
+            return alert("Por favor, selecciona al menos un servicio.");
+        }
+        
+        const serviciosIds = Array.from(checkboxes).map(cb => cb.value); // Ejemplo: [1, 3]
 
-                showLoading(); // Mostrar overlay
+        showLoading(); 
 
-                const formData = Object.fromEntries(new FormData(e.target));
-                formData.accion = 'confirmar';
-                formData.session_id = SESSION_ID;
+        const formData = Object.fromEntries(new FormData(e.target));
+        formData.accion = 'confirmar';
+        formData.session_id = SESSION_ID;
+        formData.servicios = serviciosIds; // <--- AQUÍ ENVIAMOS EL ARRAY
 
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
 
                     // Importante: Ahora el PHP siempre devuelve JSON, incluso en error controlado
                     const result = await response.json();
@@ -285,6 +286,64 @@ function hideLoading() {
                 return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
             }
 
+            // --- NUEVA FUNCIÓN PARA CARGAR SERVICIOS COMO CHECKBOXES ---
+    async function cargarServicios() {
+        const contenedor = document.getElementById('contenedor-servicios');
+        if (!contenedor) return;
+
+        try {
+            const url = `${API_URL}?accion=obtener_servicios&tipo=${TIPO_SERVICIO}`;
+            const response = await fetch(url);
+            const servicios = await response.json();
+
+            contenedor.innerHTML = ''; // Limpiar
+
+            if(Array.isArray(servicios) && servicios.length > 0) {
+                servicios.forEach(s => {
+                    // Crear Checkbox
+                    const div = document.createElement('div');
+                    div.className = 'form-check mb-2';
+                    div.innerHTML = `
+                        <input class="form-check-input servicio-checkbox" type="checkbox" value="${s.id}" id="serv-${s.id}" data-precio="${s.precio}">
+                        <label class="form-check-label d-flex justify-content-between" for="serv-${s.id}" style="cursor:pointer; width:100%;">
+                            <span>${s.nombre}</span>
+                            <span class="fw-bold text-muted">S/. ${parseFloat(s.precio).toFixed(2)}</span>
+                        </label>
+                    `;
+                    contenedor.appendChild(div);
+                });
+
+                // Agregar evento de escucha para sumar precios
+                document.querySelectorAll('.servicio-checkbox').forEach(chk => {
+                    chk.addEventListener('change', calcularTotal);
+                });
+
+            } else {
+                contenedor.innerHTML = '<p class="text-danger">No hay servicios disponibles.</p>';
+            }
+        } catch (e) {
+            console.error("Error cargando servicios:", e);
+            contenedor.innerHTML = '<p class="text-danger">Error de conexión.</p>';
+        }
+    }
+
+    // --- FUNCIÓN PARA SUMAR PRECIOS ---
+    function calcularTotal() {
+        let total = 0;
+        const checkboxes = document.querySelectorAll('.servicio-checkbox:checked');
+        const divPrecio = document.getElementById('precio-estimado');
+
+        checkboxes.forEach(chk => {
+            total += parseFloat(chk.dataset.precio);
+        });
+
+        if (total > 0) {
+            divPrecio.style.display = 'block';
+            divPrecio.innerHTML = `<i class="fas fa-tag me-2"></i>Total estimado: <strong>S/. ${total.toFixed(2)}</strong>`;
+        } else {
+            divPrecio.style.display = 'none';
+        }
+    }
             // Init
             cargarDatosIniciales();
         });

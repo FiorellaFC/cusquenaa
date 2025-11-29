@@ -56,22 +56,28 @@
 
                     <!-- ESTADÍSTICAS -->
                     <div class="row g-4 mb-5">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stats-card bg-primary">
                                 <h2 id="totalCitas">0</h2>
                                 <p>Total Completadas</p>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stats-card bg-success">
                                 <h4 id="servicioTop">-</h4>
                                 <p>Servicio Más Solicitado</p>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stats-card bg-warning text-dark">
                                 <h4 id="clienteTop">-</h4>
                                 <p>Cliente Más Frecuente</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card bg-success">
+                                <h2 id="totalGanancia">S/. 0.00</h2>
+                                <p>Ganancias del Periodo</p>
                             </div>
                         </div>
                     </div>
@@ -110,14 +116,14 @@
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover mb-0" id="tablaCompleta">
-                                    <thead class="table-dark">
+                                   <thead class="table-dark">
                                         <tr>
                                             <th>Fecha</th>
                                             <th>Cliente</th>
                                             <th>Teléfono</th>
-                                            <th>Servicio</th>
+                                            <th>Servicios</th>
                                             <th>Hora</th>
-                                            <th>Estado</th>
+                                            <th>Monto</th> <th>Estado</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tablaCitas"></tbody>

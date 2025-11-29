@@ -7,7 +7,6 @@ $session_id = uniqid('reserva_', true);
 $c_nombre = ''; $c_apellido = ''; $c_telefono = ''; $c_dni = ''; $c_email = '';
 $usuario_logueado = false;
 
-// Si hay sesión, llenamos variables y marcamos la bandera
 if (isset($_SESSION['cliente_data'])) {
     $usuario_logueado = true;
     $u = $_SESSION['cliente_data'];
@@ -46,30 +45,23 @@ if ($tipo_url === 'lavado') {
 
     <style>
         body { padding-top: 70px; font-family: 'Poppins', sans-serif; background-color: #f2f2f2; color: #333; }
-        /* AVISO */
         .aviso-container { background-color: #1a1b1e; color: white; padding: 40px 20px; text-align: center; width: 100%; border-bottom: 4px solid #d4af37; }
         .horario-highlight { font-weight: 700; color: #fff; display: block; margin-bottom: 5px; font-size: 1.1rem; }
         .aviso-text { font-size: 0.9rem; opacity: 0.8; margin-top: 15px; margin-bottom: 0; }
-        /* HEADER */
         .main-title { text-align: center; margin-top: 50px; font-weight: 600; font-size: 2.5rem; text-transform: uppercase; margin-bottom: 10px; }
         .breadcrumb-custom { text-align: center; color: #6c757d; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 50px; }
-        /* CARDS */
         .card-clean { background: white; border-radius: 8px; border: 1px solid #e0e0e0; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
         .section-title { font-weight: 600; font-size: 1.25rem; margin-bottom: 20px; }
         .header-dark { background-color: #000; color: #d4af37; padding: 15px 20px; font-weight: 600; border-radius: 8px 8px 0 0; display: flex; align-items: center; }
-        /* BOTONES */
         .horario-btn { border: 1px solid #198754; color: #198754; background-color: white; padding: 10px 20px; border-radius: 5px; font-weight: 500; width: 100px; transition: all 0.2s; cursor: pointer; }
         .horario-btn:hover:not(:disabled), .horario-btn.seleccionado { background-color: #198754; color: white; box-shadow: 0 4px 8px rgba(25, 135, 84, 0.2); transform: translateY(-2px); }
         .horario-btn:disabled { background-color: #e9ecef; border-color: #dee2e6; color: #adb5bd; cursor: not-allowed; opacity: 0.6; }
-        /* UTILS */
         #cronometro-container { background: #fff3cd; border: 1px solid #ffe69c; padding: 10px; text-align: center; margin-bottom: 20px; border-radius: 8px; display: none; }
         #cronometro { font-weight: bold; color: #dc3545; font-size: 1.2rem; }
-        /* MODAL */
         .checkmark-circle { width: 80px; height: 80px; position: relative; display: inline-block; margin: 0 auto 20px auto; }
         .checkmark-circle .background { width: 80px; height: 80px; border-radius: 50%; background: #4caf50; position: absolute; top: 0; left: 0; }
         .checkmark { border-radius: 5px; }
         .checkmark:after { position: absolute; display: block; content: ""; left: 30px; top: 16px; width: 20px; height: 40px; border: solid white; border-width: 0 6px 6px 0; transform: rotate(45deg); }
-        /* OVERLAY */
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
         .loading-content { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
         footer { background-color: #212529; color: white; text-align: center; padding: 30px 0; margin-top: 80px; font-size: 0.9rem; }
@@ -181,12 +173,16 @@ if ($tipo_url === 'lavado') {
                         </div>
                     <?php endif; ?>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Servicio solicitado</label>
-                        <select name="servicio_solicitado" class="form-select" required>
-                            <option value="">Cargando servicios...</option>
-                        </select>
-                        <div id="precio-estimado" class="alert alert-warning mt-2 p-2" style="display: none; font-size: 0.9rem; border-left: 4px solid #d4af37; background-color: #fff3cd; color: #856404;"></div>
+                   <div class="mb-4">
+                        <label class="form-label fw-bold">Seleccione los servicios:</label>
+                        
+                        <div id="contenedor-servicios" class="p-3 border rounded bg-white" style="max-height: 200px; overflow-y: auto;">
+                            <p class="text-muted small mb-0">Cargando servicios...</p>
+                        </div>
+
+                        <div id="precio-estimado" class="alert alert-warning mt-2 p-2 text-center fw-bold" style="display: none; font-size: 1rem; border-left: 4px solid #d4af37; background-color: #fff3cd; color: #856404;">
+                            Total estimado: S/. 0.00
+                        </div>
                     </div>
 
                     <div class="text-center">

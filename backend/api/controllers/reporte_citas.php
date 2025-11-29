@@ -3,24 +3,36 @@ header("Content-Type: application/json; charset=utf-8");
 
 require_once __DIR__ . '/../../includes/db.php';
 
-// CAMBIO: Por defecto tomamos el primer día del mes actual y el último día del mes actual
 $inicio = $_GET['inicio'] ?? date('Y-m-01'); 
 $fin    = $_GET['fin']    ?? date('Y-m-t');
 
 try {
+    // CONSULTA AVANZADA CON GANANCIAS Y SERVICIOS MÚLTIPLES
     $sql = "
         SELECT 
             c.fecha,
             c.hora,
             TRIM(CONCAT(COALESCE(c.nombre_cliente, ''), ' ', COALESCE(c.apellido_cliente, ''))) as nombre_completo,
             COALESCE(c.telefono_cliente, '-') as telefono_cliente,
-            COALESCE(s.nombre, 'Sin servicio especificado') as servicio_nombre
+            
+            -- Lista de servicios
+            GROUP_CONCAT(s.nombre SEPARATOR ', ') as servicio_nombre,
+            
+            -- Cálculo de Precio: Si precio_final > 0 usa ese, si no, suma los detalles
+            CASE 
+                WHEN c.precio_final > 0 THEN c.precio_final 
+                ELSE COALESCE(SUM(cd.precio_al_momento), 0) 
+            END as precio_total
+
         FROM citas c
-        LEFT JOIN servicios s ON c.servicio_id = s.id
+        -- Unir con detalles y servicios
+        LEFT JOIN citas_detalles cd ON c.id = cd.cita_id
+        LEFT JOIN servicios s ON cd.servicio_id = s.id
         
-        -- CAMBIO: AHORA FILTRAMOS SOLO LAS 'COMPLETADAS' (YA PAGADAS)
         WHERE c.estado = 'completada'
           AND c.fecha BETWEEN ? AND ?
+        
+        GROUP BY c.id
         ORDER BY c.fecha DESC, c.hora DESC
     ";
 
@@ -29,22 +41,37 @@ try {
     $citas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Estadísticas
-    $total = count($citas);
+    $total_citas = count($citas);
+    $total_ganancia = 0;
 
-    $servicios = array_column($citas, 'servicio_nombre');
-    $servicios_validos = array_filter($servicios, function($s) { return $s !== 'Sin servicio especificado'; });
-    $conteoServ = array_count_values($servicios_validos);
+    // Calcular ganancia total y buscar tops
+    $todos_servicios = [];
+    $todos_clientes = [];
+
+    foreach ($citas as $c) {
+        $total_ganancia += (float)$c['precio_total'];
+        if($c['nombre_completo']) $todos_clientes[] = $c['nombre_completo'];
+        
+        // Separar servicios para contar individuales
+        if($c['servicio_nombre']) {
+            $servs = explode(', ', $c['servicio_nombre']);
+            foreach($servs as $sv) $todos_servicios[] = $sv;
+        }
+    }
+
+    // Tops
+    $conteoServ = array_count_values($todos_servicios);
     $servicio_top = !empty($conteoServ) ? array_search(max($conteoServ), $conteoServ) : 'N/A';
 
-    $clientes = array_column($citas, 'nombre_completo');
-    $conteoCli = array_count_values(array_filter($clientes));
+    $conteoCli = array_count_values($todos_clientes);
     $cliente_top = !empty($conteoCli) ? array_search(max($conteoCli), $conteoCli) : 'N/A';
 
     echo json_encode([
-        "total"        => $total,
-        "servicio_top" => $servicio_top,
-        "cliente_top"  => $cliente_top,
-        "citas"        => $citas
+        "total"          => $total_citas,
+        "ganancia_total" => number_format($total_ganancia, 2), // Formato 1,500.00
+        "servicio_top"   => $servicio_top,
+        "cliente_top"    => $cliente_top,
+        "citas"          => $citas
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
