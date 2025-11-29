@@ -258,21 +258,27 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalDetalleServicios" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered" style="z-index: 1060;"> <div class="modal-content">
-                <div class="modal-header bg-info text-white py-2">
-                    <h6 class="modal-title fw-bold">Servicios Solicitados</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div id="listaServiciosDetalle"></div>
-                </div>
-                <div class="modal-footer py-1 justify-content-center">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+
+<div class="modal fade" id="modalDetalleServicios" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+          <div class="modal-content border-0 shadow">
+              <div class="modal-header bg-dark text-white py-2 border-bottom border-secondary">
+                  <h6 class="modal-title fw-bold small text-uppercase" style="letter-spacing: 1px;">
+                      <i class="fas fa-clipboard-list me-2 text-warning"></i> Servicios
+                  </h6>
+                  <button type="button" class="btn-close btn-close-white small" data-bs-dismiss="modal"></button>
+              </div>
+              
+              <div class="modal-body p-0 bg-white">
+                  <div id="listaServiciosDetalle"></div>
+              </div>
+              
+              <div class="modal-footer py-1 justify-content-center bg-light border-top">
+                  <button type="button" class="btn btn-sm btn-secondary w-50 fw-bold" data-bs-dismiss="modal">Cerrar</button>
+              </div>
+          </div>
+      </div>
+  </div>
 
     <script src="../js/bootstrap.bundle.min.js"></script>
     <script src="../js/functions/gestionClientes.js"></script>

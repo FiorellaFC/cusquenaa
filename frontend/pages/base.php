@@ -41,7 +41,7 @@
     <div id="layoutSidenav_content">
       <main class="container-xl my-2 col-10 mx-auto">
         <div class="container-fluid px-4 ">
-          <h1 class="mb-4 text-center">Titulo de la Sección</h1>
+          <h1 class="mb-4 text-center">bienvenido admin</h1>
         </div>
       </main>
 

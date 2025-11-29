@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_URL = '../../backend/api/controllers/vista_citas/gestionCitasAdmin.php';
     const API_SERVICIOS = '../../backend/api/controllers/vista_reservas/gestionCitas.php?accion=obtener_servicios'; 
 
+    
+
     // DOM
     const tbodyCitas = document.querySelector('#tblCitas tbody');
     const paginationControls = document.getElementById('paginationControls');

@@ -5,7 +5,6 @@
     <title>Reporte de Citas - La Cusqueña</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- CSS -->
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/sidebar.css">
@@ -15,19 +14,17 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- LIBRERÍA PARA EXCEL (solo esta línea nueva) -->
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
         body { background: #eef1f5; font-family: 'Poppins', sans-serif; }
-        .stats-card { border-radius: 20px; padding: 30px; text-align: center; color: white; box-shadow: 0 12px 30px rgba(0,0,0,0.25); height: 100%; }
+        .stats-card { border-radius: 20px; padding: 30px; text-align: center; color: white; box-shadow: 0 12px 30px rgba(0,0,0,0.25); height: 100%; display: flex; flex-direction: column; justify-content: center; }
         .table th { background: #212529; color: white; }
         h1 { color: #1a1a1a; font-weight: 800; }
     </style>
 </head>
 <body class="sb-nav-fixed">
 
-    <!-- NAVBAR -->
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark fixed-top">
         <a class="navbar-brand ps-3" href="base2.php">La Cusqueña</a>
         <button class="btn btn-link btn-sm text-white me-4" id="sidebarToggle">
@@ -36,7 +33,6 @@
     </nav>
 
     <div id="layoutSidenav">
-        <!-- SIDEBAR -->
         <div id="layoutSidenav_nav">
             <script>
                 fetch('sidebear_Admin.php')
@@ -54,35 +50,33 @@
                         Reporte de Citas Completadas
                     </h1>
 
-                    <!-- ESTADÍSTICAS -->
                     <div class="row g-4 mb-5">
-                        <div class="col-md-3">
+                        <div class="col-md-6 col-lg-3">
                             <div class="stats-card bg-primary">
                                 <h2 id="totalCitas">0</h2>
-                                <p>Total Completadas</p>
+                                <p class="mb-0 small text-uppercase fw-bold">Total Completadas</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-6 col-lg-3">
                             <div class="stats-card bg-success">
                                 <h4 id="servicioTop">-</h4>
-                                <p>Servicio Más Solicitado</p>
+                                <p class="mb-0 small text-uppercase fw-bold">Servicio Top</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-6 col-lg-3">
                             <div class="stats-card bg-warning text-dark">
                                 <h4 id="clienteTop">-</h4>
-                                <p>Cliente Más Frecuente</p>
+                                <p class="mb-0 small text-uppercase fw-bold">Cliente Top</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stats-card bg-success">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="stats-card bg-dark text-warning border border-warning">
                                 <h2 id="totalGanancia">S/. 0.00</h2>
-                                <p>Ganancias del Periodo</p>
+                                <p class="mb-0 small text-uppercase fw-bold">Ganancia Total</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- FILTROS -->
                     <div class="card shadow mb-4">
                         <div class="card-body">
                             <div class="row g-3 align-items-end">
@@ -95,28 +89,28 @@
                                     <input type="date" id="fechaFin" class="form-control">
                                 </div>
                                 <div class="col-md-2">
-                                    <button class="btn btn-dark w-100" onclick="cargarReporte()">Filtrar</button>
+                                    <button class="btn btn-dark w-100" onclick="cargarReporte()">
+                                        <i class="fas fa-filter me-1"></i> Filtrar
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- BOTONES PDF + EXCEL -->
                     <div class="text-end mb-4">
                         <button class="btn btn-danger btn-lg me-3" onclick="exportarPDF()">
-                            <i class="fas fa-file-pdf"></i> Exportar PDF
+                            <i class="fas fa-file-pdf me-1"></i> Exportar PDF
                         </button>
                         <button class="btn btn-success btn-lg" onclick="exportarExcel()">
-                            <i class="fas fa-file-excel"></i> Exportar Excel
+                            <i class="fas fa-file-excel me-1"></i> Exportar Excel
                         </button>
                     </div>
 
-                    <!-- TABLA -->
                     <div class="card shadow">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover mb-0" id="tablaCompleta">
-                                   <thead class="table-dark">
+                                    <thead class="table-dark">
                                         <tr>
                                             <th>Fecha</th>
                                             <th>Cliente</th>
@@ -136,9 +130,23 @@
             </main>
         </div>
     </div>
-
+        <div class="modal fade" id="modalDetalleServicios" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-sm modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-dark text-white py-2">
+                            <h6 class="modal-title fw-bold small">Servicios Realizados</h6>
+                            <button type="button" class="btn-close btn-close-white small" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-0">
+                            <div id="listaServiciosDetalle"></div>
+                        </div>
+                        <div class="modal-footer py-1 justify-content-center bg-light">
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
     <script src="../js/bootstrap.bundle.min.js"></script>
-    
     <script src="../js/functions/reporte_citas.js"></script>
 
 </body>

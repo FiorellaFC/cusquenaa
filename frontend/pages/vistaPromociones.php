@@ -20,11 +20,10 @@ session_start();
         /* Ajuste Navbar Fijo */
         body { padding-top: 70px; font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
 
-        /* Hero Promociones */
         #hero-promos {
             background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
                 url('../css/imagenes/img2.jpg') center center/cover no-repeat;
-            height: 60vh; /* Ajustado para que no sea tan alto */
+            height: 60vh; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -74,7 +73,7 @@ session_start();
             transition: all 0.4s ease-in-out;
             position: relative;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-            height: 100%; /* Para que todas tengan la misma altura */
+            height: 100%;
         }
 
         .promo-card:hover {
@@ -147,7 +146,6 @@ session_start();
 
     <script>
         // Cargar promociones desde el backend
-        // Ajusta la ruta si es necesario, usé ../.. asumiendo que estás en frontend/pages
         fetch('../../backend/api/controllers/vista_promociones/getPromociones.php')
             .then(r => {
                 if (!r.ok) throw new Error("Error de red");
@@ -169,8 +167,7 @@ session_start();
                             <h5 class="fw-bold">${p.titulo}</h5>
                             <p>${p.descripcion}</p>
                             <p class="fw-bold text-success fs-4">S/ ${parseFloat(p.precio).toFixed(2)}</p>
-                            <a href="gestionCitas.php?tipo=mantenimiento" class="btn btn-outline-danger btn-sm rounded-pill mt-2">Reservar Ahora</a>
-                        </div>
+                            </div>
                     </div>
                 `).join('');
                 
